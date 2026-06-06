@@ -7,7 +7,79 @@ internal static class ProjectScaffolder
     private const string CqrsSubmoduleUrl =
         "https://github.com/3DExtended/Prodot.Patterns.Cqrs.git";
 
-    public static int ScaffoldDotnetBackend(string projectName)
+    public static int ScaffoldProject(string projectName, string frontend)
+    {
+        var backendResult = ScaffoldDotnetBackend(projectName, frontend);
+        if (backendResult != 0)
+        {
+            return backendResult;
+        }
+
+        if (string.Equals(frontend, "none", StringComparison.OrdinalIgnoreCase))
+        {
+            PrintSuccessMessage();
+            return 0;
+        }
+
+        if (!string.Equals(frontend, "flutter", StringComparison.OrdinalIgnoreCase))
+        {
+            Console.Error.WriteLine($"Unknown frontend template '{frontend}'. Supported: flutter, none.");
+            return 1;
+        }
+
+        var root = Directory.GetCurrentDirectory();
+        var flutterResult = FlutterScaffolder.Scaffold(projectName);
+        if (flutterResult != 0)
+        {
+            return flutterResult;
+        }
+
+        Console.WriteLine("Syncing OpenAPI spec and Flutter client...");
+        var context = ProjectContext.Resolve(workingDirectory: root);
+        if (OpenApiSyncHelper.Sync(context, recordManifest: false) != 0)
+        {
+            Console.Error.WriteLine("Error syncing OpenAPI.");
+            return 1;
+        }
+
+        Console.WriteLine("Generating initial golden screenshots...");
+        if (FlutterCommandHelper.RunFlutter(context, "test --update-goldens") != 0)
+        {
+            Console.Error.WriteLine("Error generating golden screenshots.");
+            return 1;
+        }
+
+        Console.WriteLine("Running Flutter tests...");
+        if (FlutterCommandHelper.RunFlutter(context, "test") != 0)
+        {
+            Console.Error.WriteLine("Error running Flutter tests.");
+            return 1;
+        }
+
+        ProjectManifest.RecordCommand(
+            root,
+            new ManifestCommandEntry
+            {
+                Command = "init flutter",
+                Args = new Dictionary<string, JsonElement>
+                {
+                    ["projectName"] = JsonSerializer.SerializeToElement(projectName),
+                },
+            }
+        );
+
+        ProjectManifest.RecordCommand(
+            root,
+            new ManifestCommandEntry { Command = "project sync-openapi" }
+        );
+
+        AgentDocsGenerator.RefreshState(root);
+
+        PrintSuccessMessage();
+        return 0;
+    }
+
+    public static int ScaffoldDotnetBackend(string projectName, string frontend = "none")
     {
         var tokens = new TemplateTokens { ProjectName = projectName };
         var root = Directory.GetCurrentDirectory();
@@ -46,6 +118,11 @@ internal static class ProjectScaffolder
         if (ProcessRunner.Run("dotnet", $"new webapi --name {projectName}.Api -o {apiDir}") != 0)
         {
             Console.Error.WriteLine("Error creating .NET Web API project.");
+            return 1;
+        }
+
+        if (!RemoveDefaultOpenApiPackage(projectName))
+        {
             return 1;
         }
 
@@ -149,15 +226,29 @@ internal static class ProjectScaffolder
                 Args = new Dictionary<string, JsonElement>
                 {
                     ["projectName"] = JsonSerializer.SerializeToElement(projectName),
+                    ["backend"] = JsonSerializer.SerializeToElement("dotnet"),
+                    ["frontend"] = JsonSerializer.SerializeToElement(frontend),
                 },
             }
         );
 
+        Console.WriteLine("Writing agent onboarding docs...");
+        AgentDocsGenerator.ScaffoldInitial(
+            root,
+            tokens,
+            hasBackend: true,
+            hasFlutter: string.Equals(frontend, "flutter", StringComparison.OrdinalIgnoreCase)
+        );
+
+        return 0;
+    }
+
+    private static void PrintSuccessMessage()
+    {
         Console.WriteLine();
         Console.WriteLine("Project scaffolded successfully.");
         Console.WriteLine("  docker compose up -d --build");
         Console.WriteLine("  http://localhost:8080/health");
-        return 0;
     }
 
     private static void CopyRootFiles(string root, TemplateTokens tokens)
@@ -176,6 +267,10 @@ internal static class ProjectScaffolder
         );
 
         File.WriteAllText(Path.Combine(root, "features", ".gitkeep"), string.Empty);
+
+        var dotnetToolsDir = Path.Combine(root, ".config");
+        Directory.CreateDirectory(dotnetToolsDir);
+        TemplateEngine.CopyFile(".config/dotnet-tools.json", Path.Combine(dotnetToolsDir, "dotnet-tools.json"), tokens);
     }
 
     private static void ApplyProjectTemplates(string root, TemplateTokens tokens)
@@ -308,12 +403,23 @@ internal static class ProjectScaffolder
         return exitCode == 0;
     }
 
+    private static bool RemoveDefaultOpenApiPackage(string projectName)
+    {
+        var apiProject = $"applications/{projectName}.Api/{projectName}.Api.csproj";
+        return ProcessRunner.Run("dotnet", $"remove \"{apiProject}\" package Microsoft.AspNetCore.OpenApi") == 0;
+    }
+
     private static bool AddNuGetPackages(string projectName)
     {
         var apiProject = $"applications/{projectName}.Api/{projectName}.Api.csproj";
         return ProcessRunner.Run(
                 "dotnet",
                 $"add \"{apiProject}\" package Microsoft.EntityFrameworkCore.Design --version 10.0.5"
+            )
+            == 0
+            && ProcessRunner.Run(
+                "dotnet",
+                $"add \"{apiProject}\" package Swashbuckle.AspNetCore --version 9.0.6"
             )
             == 0;
     }

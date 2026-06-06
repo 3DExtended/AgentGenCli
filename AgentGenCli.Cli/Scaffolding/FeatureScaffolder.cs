@@ -99,6 +99,21 @@ internal static class FeatureScaffolder
                 return 1;
             }
 
+            if (request.WithApi && Directory.Exists(context.FlutterAppDir))
+            {
+                Console.WriteLine("Syncing OpenAPI spec and Flutter client...");
+                if (OpenApiSyncHelper.Sync(context, recordManifest: false) != 0)
+                {
+                    Console.Error.WriteLine("Error syncing OpenAPI.");
+                    return 1;
+                }
+
+                ProjectManifest.RecordCommand(
+                    context.Root,
+                    new ManifestCommandEntry { Command = "project sync-openapi" }
+                );
+            }
+
             ProjectManifest.RecordFeature(
                 context.Root,
                 feature.PascalName,
@@ -114,6 +129,8 @@ internal static class FeatureScaffolder
                     },
                 }
             );
+
+            AgentDocsGenerator.RefreshState(context.Root);
 
             Console.WriteLine();
             Console.WriteLine($"Feature '{feature.PascalName}' scaffolded successfully.");
@@ -486,6 +503,11 @@ internal static class FeatureScaffolder
         }
 
         result = result.Replace("ProjectName", tokens.ProjectName, StringComparison.Ordinal);
+        if (!string.IsNullOrEmpty(tokens.FeatureNameLower))
+        {
+            result = result.Replace("FeatureNameLower", tokens.FeatureNameLower, StringComparison.Ordinal);
+        }
+
         if (!string.IsNullOrEmpty(tokens.FeatureName))
         {
             result = result.Replace("FeatureName", tokens.FeatureName, StringComparison.Ordinal);

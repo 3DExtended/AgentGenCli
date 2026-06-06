@@ -1,0 +1,67 @@
+# Frontend guide — {{ProjectName}}
+
+Flutter app using FVM, Riverpod, go_router, and golden tests. This guide applies because this project was initialized with `frontend=flutter`.
+
+## App location
+
+```
+applications/{{ProjectNameLower}}/
+├── lib/
+│   ├── main.dart
+│   ├── core/
+│   │   ├── router/app_router.dart    # routes — CLI patches marker below
+│   │   ├── api/api_connector.dart
+│   │   └── theme/
+│   ├── features/                     # one folder per screen/feature
+│   └── generated/swaggen/            # generated OpenAPI client (do not edit)
+├── swagger/swagger.json              # exported from .NET API
+├── test/                             # widget + golden tests
+└── pubspec.yaml
+```
+
+Requires **FVM** on PATH. Commands run via `fvm flutter …`.
+
+## Adding a feature
+
+```bash
+agentGenCli new frontend-feature myfeature --withApi --yes
+```
+
+Creates `lib/features/myfeature/` (screen, provider, widget), generates `{feature}_service.dart`, and patches:
+
+```dart
+// lib/core/router/app_router.dart
+// agentGenCli:routes
+```
+
+## API integration
+
+When backend exposes an API for the feature:
+
+1. Scaffold backend with `--withApi` first (if not done)
+2. `agentGenCli project sync-openapi` — exports swagger, runs `build_runner`, regenerates `lib/generated/swaggen/`
+3. Scaffold or update frontend feature with `--withApi`
+
+Without `--withApi`, services contain TODO stubs pointing at the sync workflow.
+
+## Code generation
+
+```bash
+# from applications/{{ProjectNameLower}}/
+./generatefiles.sh          # build_runner for swagger client
+fvm flutter gen-l10n        # also run by sync-openapi
+```
+
+## Testing
+
+```bash
+fvm flutter test
+./test/update_goldens.sh    # or: fvm flutter test --update-goldens
+```
+
+Golden tests live under `test/features/`. Update baselines when UI changes intentionally.
+
+## Do not hand-edit
+
+- `lib/generated/swaggen/` — regenerate via `project sync-openapi` or `generatefiles.sh`
+- Route list in `app_router.dart` at `// agentGenCli:routes` — use `new frontend-feature` or follow marker pattern
