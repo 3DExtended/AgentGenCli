@@ -1,0 +1,23 @@
+using Microsoft.EntityFrameworkCore;
+
+namespace {{ProjectName}}.Common.Data;
+
+// Partial DbContext: additional partials can live in this project.
+// Feature projects extend the model via IEntityTypeConfiguration without editing this file.
+public partial class {{ProjectName}}DbContext : DbContext
+{
+    public {{ProjectName}}DbContext(DbContextOptions<{{ProjectName}}DbContext> options)
+        : base(options)
+    {
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        foreach (var assembly in FeatureAssemblyRegistry.Assemblies)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(assembly);
+        }
+    }
+}

@@ -1,0 +1,24 @@
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+
+namespace {{ProjectName}}.Api.Tests;
+
+public class HealthEndpointTests : IClassFixture<WebApplicationFactory<ApiEntryPoint>>
+{
+    private readonly WebApplicationFactory<ApiEntryPoint> _factory;
+
+    public HealthEndpointTests(WebApplicationFactory<ApiEntryPoint> factory)
+    {
+        _factory = factory;
+    }
+
+    [Fact]
+    public async Task Health_returns_ok()
+    {
+        var client = _factory
+            .WithWebHostBuilder(builder => builder.UseEnvironment("E2ETest"))
+            .CreateClient();
+        var response = await client.GetAsync("/health");
+        Assert.True(response.IsSuccessStatusCode);
+    }
+}

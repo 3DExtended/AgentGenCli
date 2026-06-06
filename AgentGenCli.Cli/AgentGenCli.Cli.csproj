@@ -11,4 +11,8 @@
   <ItemGroup>
     <PackageReference Include="System.CommandLine" Version="2.0.8" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="Templates\Project\**\*" />
+    <None Include="Templates\Project\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\Project" />
+  </ItemGroup>
 </Project>

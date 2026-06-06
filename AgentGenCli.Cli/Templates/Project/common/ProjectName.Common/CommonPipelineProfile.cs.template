@@ -1,0 +1,10 @@
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Common;
+
+public class CommonPipelineProfile : IPipelineProfile
+{
+    public void RegisterPipelines(Action<Pipeline> registerFunction)
+    {
+    }
+}

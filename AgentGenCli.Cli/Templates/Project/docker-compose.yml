@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: {{ProjectNameLower}}_postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: {{ProjectNameLower}}
+    volumes:
+      - {{ProjectNameLower}}_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    container_name: {{ProjectNameLower}}_api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: applications/{{ProjectName}}.Api/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      Sql__ConnectionString: "Host=postgres;Port=5432;Database={{ProjectNameLower}};Username=postgres;Password=postgres"
+
+volumes:
+  {{ProjectNameLower}}_pgdata:

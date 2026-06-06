@@ -1,0 +1,13 @@
+using {{ProjectName}}.Common;
+
+namespace {{ProjectName}}.Common.Tests;
+
+public class CommonSmokeTests
+{
+    [Fact]
+    public void CommonPipelineProfile_can_be_created()
+    {
+        var profile = new CommonPipelineProfile();
+        Assert.NotNull(profile);
+    }
+}

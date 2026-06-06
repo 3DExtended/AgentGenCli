@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+**/.vs/
+.git/
+**/*.user
+**/*.suo
+**/TestResults/
+tests/
+features/
+**/coverage/
+**/.dart_tool/
+applications/*/build/
+applications/*/.fvm/
