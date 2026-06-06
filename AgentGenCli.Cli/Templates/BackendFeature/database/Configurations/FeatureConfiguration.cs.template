@@ -1,0 +1,16 @@
+using {{ProjectName}}.Features.{{FeatureName}}.Entities;
+
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Configurations;
+
+public class {{FeatureName}}Configuration : IEntityTypeConfiguration<Entities.{{FeatureName}}>
+{
+    public void Configure(EntityTypeBuilder<Entities.{{FeatureName}}> builder)
+    {
+        builder.ToTable("{{FeatureName}}");
+        builder.HasKey(entity => entity.Id);
+        builder.Property(entity => entity.Name).HasMaxLength(256).IsRequired();
+    }
+}

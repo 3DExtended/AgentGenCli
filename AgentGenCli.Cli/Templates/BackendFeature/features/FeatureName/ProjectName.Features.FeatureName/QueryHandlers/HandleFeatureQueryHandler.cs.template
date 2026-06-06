@@ -1,0 +1,26 @@
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
+
+/// <summary>
+/// Scaffold placeholder — replace with your {{FeatureName}} logic.
+/// </summary>
+public class Handle{{FeatureName}}QueryHandler : IQueryHandler<Handle{{FeatureName}}Query, {{FeatureName}}Dto>
+{
+    public IQueryHandler<Handle{{FeatureName}}Query, {{FeatureName}}Dto> Successor { get; set; } = default!;
+
+    public Task<Option<{{FeatureName}}Dto>> RunQueryAsync(
+        Handle{{FeatureName}}Query query,
+        CancellationToken cancellationToken
+    )
+    {
+        return Task.FromResult<Option<{{FeatureName}}Dto>>(
+            new {{FeatureName}}Dto
+            {
+                Message = "Replace this query with your {{FeatureName}} logic.",
+            }
+        );
+    }
+}

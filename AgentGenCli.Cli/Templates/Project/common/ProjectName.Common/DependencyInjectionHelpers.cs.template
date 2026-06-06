@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reflection;
 
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,8 +16,15 @@ namespace {{ProjectName}}.Common;
 
 public static class DependencyInjectionHelpers
 {
-    public static Task ConfigureGlobalServices(IServiceCollection services, IConfiguration configuration)
+    public static Task ConfigureGlobalServices(
+        IServiceCollection services,
+        IConfiguration configuration,
+        IReadOnlyList<Assembly>? featureAssemblies = null
+    )
     {
+        var assemblies = featureAssemblies ?? Array.Empty<Assembly>();
+        services.AddSingleton<IFeatureAssemblyProvider>(new FeatureAssemblyProvider(assemblies));
+
         var env = services.BuildServiceProvider().GetRequiredService<IHostEnvironment>();
 
         if (!env.IsEnvironment("E2ETest"))
@@ -24,7 +32,7 @@ public static class DependencyInjectionHelpers
             ConfigureDatabase(services, configuration, env);
         }
 
-        AddCqrs(services);
+        AddCqrs(services, assemblies);
 
         if (!env.IsEnvironment("E2ETest"))
         {
@@ -77,17 +85,25 @@ public static class DependencyInjectionHelpers
         });
     }
 
-    private static void AddCqrs(IServiceCollection services)
+    private static void AddCqrs(IServiceCollection services, IReadOnlyList<Assembly> featureAssemblies)
     {
         services.AddProdotPatternsCqrs(options =>
-            options
-                .WithQueryHandlersFrom(typeof(CommonPipelineProfile).Assembly)
-                .WithQueryHandlerPipelineConfiguration(config =>
-                    config
-                        .WithPipelineAutoRegistration()
-                        .AddProfiles(typeof(CommonPipelineProfile).Assembly)
-                )
-        );
+        {
+            options.WithQueryHandlersFrom(typeof(CommonPipelineProfile).Assembly);
+            foreach (var assembly in featureAssemblies)
+            {
+                options.WithQueryHandlersFrom(assembly);
+            }
+
+            options.WithQueryHandlerPipelineConfiguration(config =>
+            {
+                config.WithPipelineAutoRegistration().AddProfiles(typeof(CommonPipelineProfile).Assembly);
+                foreach (var assembly in featureAssemblies)
+                {
+                    config.AddProfiles(assembly);
+                }
+            });
+        });
     }
 
     private static async Task ApplyEfCoreMigrations(IServiceCollection services)

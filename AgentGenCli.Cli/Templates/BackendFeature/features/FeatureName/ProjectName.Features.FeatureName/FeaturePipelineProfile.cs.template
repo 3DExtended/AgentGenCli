@@ -1,0 +1,10 @@
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}};
+
+public class {{FeatureName}}PipelineProfile : IPipelineProfile
+{
+    public void RegisterPipelines(Action<Pipeline> registerFunction)
+    {
+    }
+}

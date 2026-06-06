@@ -1,0 +1,8 @@
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+
+public class Delete{{FeatureName}}Query : IQuery<bool, Delete{{FeatureName}}Query>
+{
+    public Guid Id { get; set; }
+}

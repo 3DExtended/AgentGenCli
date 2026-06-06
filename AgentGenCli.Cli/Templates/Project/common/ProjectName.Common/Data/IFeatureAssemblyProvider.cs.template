@@ -1,0 +1,8 @@
+using System.Reflection;
+
+namespace {{ProjectName}}.Common.Data;
+
+public interface IFeatureAssemblyProvider
+{
+    IReadOnlyList<Assembly> Assemblies { get; }
+}

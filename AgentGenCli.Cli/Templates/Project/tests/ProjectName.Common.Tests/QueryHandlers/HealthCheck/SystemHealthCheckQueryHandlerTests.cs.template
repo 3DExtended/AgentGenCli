@@ -22,6 +22,7 @@ public class SystemHealthCheckQueryHandlerTests
     {
         var databaseName = Guid.NewGuid().ToString("N");
         var services = new ServiceCollection();
+        services.AddSingleton<IFeatureAssemblyProvider>(new FeatureAssemblyProvider([]));
         services.AddDbContextFactory<{{ProjectName}}DbContext>(options =>
             options.UseSqlite($"Data Source={databaseName};Mode=Memory;Cache=Shared")
         );

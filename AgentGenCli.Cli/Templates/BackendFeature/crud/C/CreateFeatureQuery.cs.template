@@ -1,0 +1,8 @@
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+
+public class Create{{FeatureName}}Query : IQuery<{{FeatureName}}Dto, Create{{FeatureName}}Query>
+{
+    public string Name { get; set; } = string.Empty;
+}

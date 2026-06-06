@@ -1,0 +1,10 @@
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+
+/// <summary>
+/// Scaffold placeholder — replace with your {{FeatureName}} logic.
+/// </summary>
+public class Handle{{FeatureName}}Query : IQuery<{{FeatureName}}Dto, Handle{{FeatureName}}Query>
+{
+}

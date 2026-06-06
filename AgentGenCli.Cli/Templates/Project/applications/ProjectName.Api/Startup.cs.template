@@ -25,7 +25,10 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
-        DependencyInjectionHelpers.ConfigureGlobalServices(services, Configuration).GetAwaiter().GetResult();
+        DependencyInjectionHelpers
+            .ConfigureGlobalServices(services, Configuration, FeatureRegistration.GetFeatureAssemblies())
+            .GetAwaiter()
+            .GetResult();
 
         services.AddControllers();
     }

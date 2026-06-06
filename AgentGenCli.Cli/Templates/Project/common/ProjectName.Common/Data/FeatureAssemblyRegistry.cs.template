@@ -1,8 +1,0 @@
-using System.Reflection;
-
-namespace {{ProjectName}}.Common.Data;
-
-public static class FeatureAssemblyRegistry
-{
-    public static IReadOnlyList<Assembly> Assemblies { get; } = Array.Empty<Assembly>();
-}

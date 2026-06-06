@@ -4,22 +4,52 @@ internal sealed class TemplateTokens
 {
     public required string ProjectName { get; init; }
 
+    public string? FeatureName { get; init; }
+
+    public string? FeatureNameLower { get; init; }
+
     public string ProjectNameLower => ProjectName.ToLowerInvariant();
 
-    public IReadOnlyDictionary<string, string> ToDictionary() =>
-        new Dictionary<string, string>
+    public IReadOnlyDictionary<string, string> ToDictionary()
+    {
+        var dictionary = new Dictionary<string, string>
         {
             ["{{ProjectName}}"] = ProjectName,
             ["{{ProjectNameLower}}"] = ProjectNameLower,
+        };
+
+        if (!string.IsNullOrEmpty(FeatureName))
+        {
+            dictionary["{{FeatureName}}"] = FeatureName;
+        }
+
+        if (!string.IsNullOrEmpty(FeatureNameLower))
+        {
+            dictionary["{{FeatureNameLower}}"] = FeatureNameLower;
+        }
+
+        return dictionary;
+    }
+
+    public static TemplateTokens ForFeature(string projectName, FeatureNameInfo feature) =>
+        new()
+        {
+            ProjectName = projectName,
+            FeatureName = feature.PascalName,
+            FeatureNameLower = feature.FolderName,
         };
 }
 
 internal static class TemplateEngine
 {
-    public static string GetTemplateRoot()
+    public static string GetTemplateRoot() => GetTemplateRoot("Project");
+
+    public static string GetBackendFeatureTemplateRoot() => GetTemplateRoot("BackendFeature");
+
+    private static string GetTemplateRoot(string folder)
     {
         var baseDir = AppContext.BaseDirectory;
-        return Path.Combine(baseDir, "Templates", "Project");
+        return Path.Combine(baseDir, "Templates", folder);
     }
 
     public static void CopyAll(string destinationRoot, TemplateTokens tokens)
@@ -79,6 +109,60 @@ internal static class TemplateEngine
             result = result.Replace("ProjectName", projectName, StringComparison.Ordinal);
         }
 
+        if (replacements.TryGetValue("{{FeatureName}}", out var featureName))
+        {
+            result = result.Replace("FeatureName", featureName, StringComparison.Ordinal);
+        }
+
         return result;
+    }
+
+    public static void CopyTemplateTree(
+        string templateRootRelative,
+        string destinationRoot,
+        TemplateTokens tokens,
+        Func<string, bool>? includeFile = null
+    )
+    {
+        var sourceRoot = Path.Combine(GetBackendFeatureTemplateRoot(), templateRootRelative);
+        if (!Directory.Exists(sourceRoot))
+        {
+            throw new DirectoryNotFoundException($"Template directory not found: {sourceRoot}");
+        }
+
+        var replacements = tokens.ToDictionary();
+        foreach (var sourceFile in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceRoot, sourceFile);
+            if (includeFile != null && !includeFile(relativePath))
+            {
+                continue;
+            }
+
+            var targetRelativePath = ResolveTemplateOutputPath(ReplaceTokens(relativePath, replacements));
+            var targetPath = Path.Combine(destinationRoot, targetRelativePath);
+            var directory = Path.GetDirectoryName(targetPath);
+            if (directory != null)
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            var content = ReplaceTokens(File.ReadAllText(sourceFile), replacements);
+            File.WriteAllText(
+                targetPath,
+                content,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+            );
+        }
+    }
+
+    private static string ResolveTemplateOutputPath(string relativePath)
+    {
+        if (relativePath.EndsWith(".template", StringComparison.OrdinalIgnoreCase))
+        {
+            return relativePath[..^".template".Length];
+        }
+
+        return relativePath;
     }
 }

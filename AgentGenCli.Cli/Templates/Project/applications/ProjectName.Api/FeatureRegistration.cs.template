@@ -1,0 +1,11 @@
+using System.Reflection;
+
+namespace {{ProjectName}}.Api;
+
+public static class FeatureRegistration
+{
+    public static IReadOnlyList<Assembly> GetFeatureAssemblies() =>
+    [
+        // agentGenCli:feature-assemblies
+    ];
+}

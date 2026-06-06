@@ -1,0 +1,42 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+using {{ProjectName}}.Features.{{FeatureName}}.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
+
+public class Delete{{FeatureName}}QueryHandler : IQueryHandler<Delete{{FeatureName}}Query, bool>
+{
+    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
+
+    public Delete{{FeatureName}}QueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
+    {
+        _contextFactory = contextFactory;
+    }
+
+    public IQueryHandler<Delete{{FeatureName}}Query, bool> Successor { get; set; } = default!;
+
+    public async Task<Option<bool>> RunQueryAsync(
+        Delete{{FeatureName}}Query query,
+        CancellationToken cancellationToken
+    )
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var entity = await context.Set<Entities.{{FeatureName}}>().FirstOrDefaultAsync(
+            item => item.Id == query.Id,
+            cancellationToken
+        );
+
+        if (entity == null)
+        {
+            return Option<bool>.None;
+        }
+
+        context.Set<Entities.{{FeatureName}}>().Remove(entity);
+        await context.SaveChangesAsync(cancellationToken);
+        return true;
+    }
+}

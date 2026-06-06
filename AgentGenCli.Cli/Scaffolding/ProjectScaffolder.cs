@@ -1,5 +1,7 @@
 namespace AgentGenCli.Cli.Scaffolding;
 
+using System.Text.Json;
+
 internal static class ProjectScaffolder
 {
     private const string CqrsSubmoduleUrl =
@@ -136,6 +138,20 @@ internal static class ProjectScaffolder
             Console.Error.WriteLine("Error running tests.");
             return 1;
         }
+
+        Console.WriteLine("Writing project manifest...");
+        ProjectManifest.Save(root, ProjectManifest.CreateInitial(projectName));
+        ProjectManifest.RecordCommand(
+            root,
+            new ManifestCommandEntry
+            {
+                Command = "init project",
+                Args = new Dictionary<string, JsonElement>
+                {
+                    ["projectName"] = JsonSerializer.SerializeToElement(projectName),
+                },
+            }
+        );
 
         Console.WriteLine();
         Console.WriteLine("Project scaffolded successfully.");

@@ -5,7 +5,7 @@ internal static class TemplateCatalog
     public static IReadOnlyList<string> InitTemplates { get; } = ["project", "auth"];
 
     public static IReadOnlyList<string> NewTemplates { get; } =
-    ["backend-feature", "frontend-feature"];
+    ["backend-feature", "frontend-feature", "efmigration"];
 
     public static void PrintInitTemplates()
     {

@@ -1,6 +1,7 @@
 using System.CommandLine;
 using AgentGenCli.Cli.Commands.Init;
 using AgentGenCli.Cli.Commands.New;
+using AgentGenCli.Cli.Commands.Project;
 
 namespace AgentGenCli.Cli.Commands;
 
@@ -14,6 +15,7 @@ internal static class CommandLineApp
 
         rootCommand.Subcommands.Add(InitCommands.Create());
         rootCommand.Subcommands.Add(NewCommands.Create());
+        rootCommand.Subcommands.Add(ProjectCommands.Create());
 
         return rootCommand;
     }

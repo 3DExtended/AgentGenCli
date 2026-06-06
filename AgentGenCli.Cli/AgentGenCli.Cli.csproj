@@ -13,6 +13,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="Templates\Project\**\*" />
+    <Compile Remove="Templates\BackendFeature\**\*" />
     <None Include="Templates\Project\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\Project" />
+    <None Include="Templates\BackendFeature\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\BackendFeature" />
   </ItemGroup>
 </Project>

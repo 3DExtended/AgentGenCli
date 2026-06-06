@@ -1,0 +1,45 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+using {{ProjectName}}.Features.{{FeatureName}}.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
+
+public class Get{{FeatureName}}QueryHandler : IQueryHandler<Get{{FeatureName}}Query, {{FeatureName}}Dto>
+{
+    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
+
+    public Get{{FeatureName}}QueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
+    {
+        _contextFactory = contextFactory;
+    }
+
+    public IQueryHandler<Get{{FeatureName}}Query, {{FeatureName}}Dto> Successor { get; set; } = default!;
+
+    public async Task<Option<{{FeatureName}}Dto>> RunQueryAsync(
+        Get{{FeatureName}}Query query,
+        CancellationToken cancellationToken
+    )
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var entity = await context.Set<Entities.{{FeatureName}}>().FirstOrDefaultAsync(
+            item => item.Id == query.Id,
+            cancellationToken
+        );
+
+        if (entity == null)
+        {
+            return Option<{{FeatureName}}Dto>.None;
+        }
+
+        return new {{FeatureName}}Dto
+        {
+            Id = entity.Id,
+            Name = entity.Name,
+            Message = "Found",
+        };
+    }
+}

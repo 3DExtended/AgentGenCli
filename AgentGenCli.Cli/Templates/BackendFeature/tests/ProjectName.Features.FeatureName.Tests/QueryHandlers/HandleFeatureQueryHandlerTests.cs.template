@@ -1,0 +1,38 @@
+using {{ProjectName}}.Features.{{FeatureName}};
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+using Prodot.Patterns.Cqrs;
+using Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
+
+public class Handle{{FeatureName}}QueryHandlerTests
+{
+    [Fact]
+    public async Task RunQueryAsync_ReturnsPlaceholderResult()
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddProdotPatternsCqrs(options =>
+            options
+                .WithQueryHandlersFrom(typeof({{FeatureName}}PipelineProfile).Assembly)
+                .WithQueryHandlerPipelineConfiguration(config =>
+                    config
+                        .WithPipelineAutoRegistration()
+                        .AddProfiles(typeof({{FeatureName}}PipelineProfile).Assembly)
+                )
+        );
+
+        await using var serviceProvider = services.BuildServiceProvider();
+        var handler = serviceProvider.GetRequiredService<Handle{{FeatureName}}QueryHandler>();
+
+        var result = await handler.RunQueryAsync(new Handle{{FeatureName}}Query(), CancellationToken.None);
+
+        Assert.True(result.IsSome);
+        Assert.Contains("Replace this query", result.Get().Message, StringComparison.Ordinal);
+    }
+}

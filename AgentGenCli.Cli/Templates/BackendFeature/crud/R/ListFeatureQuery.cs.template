@@ -1,0 +1,7 @@
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+
+public class List{{FeatureName}}Query : IQuery<IReadOnlyList<{{FeatureName}}Dto>, List{{FeatureName}}Query>
+{
+}
