@@ -1,0 +1,11 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{ProjectNameSnake}}/core/api/api_connector.dart';
+import 'package:{{ProjectNameSnake}}/features/{{FeatureNameLower}}/{{FeatureNameLower}}_service.dart';
+
+final {{FeatureNameLower}}ServiceProvider = Provider<{{FeatureName}}Service>(
+  (ref) => {{FeatureName}}Service(ref.watch(apiConnectorProvider)),
+);
+
+final {{FeatureNameLower}}MessageProvider = FutureProvider<String>(
+  (ref) => ref.watch({{FeatureNameLower}}ServiceProvider).getPlaceholderMessage(),
+);

@@ -1,0 +1,23 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{ProjectNameSnake}}/features/home/widgets/home_status_card.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+import '../../../golden_harness.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('home status card golden (${locale.languageCode})', (tester) async {
+      await GoldenHarness.pumpGolden(
+        tester,
+        HomeStatusCard(
+          status: locale.languageCode == 'de' ? 'System ist gesund' : 'System is healthy',
+        ),
+        locale,
+        'goldens/home_status_card_${locale.languageCode}.png',
+      );
+    });
+  }
+}

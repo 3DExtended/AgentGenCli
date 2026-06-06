@@ -17,7 +17,7 @@ internal static class NewCommands
         newCommand.Options.Add(projectOption);
         newCommand.Subcommands.Add(CreateBackendFeatureCommand(projectOption, yesOption));
         newCommand.Subcommands.Add(CreateEfMigrationCommand(projectOption));
-        newCommand.Subcommands.Add(CreateFrontendFeatureCommand());
+        newCommand.Subcommands.Add(CreateFrontendFeatureCommand(projectOption, yesOption));
 
         newCommand.SetAction(parseResult =>
         {
@@ -125,9 +125,14 @@ internal static class NewCommands
         return efMigrationCommand;
     }
 
-    private static Command CreateFrontendFeatureCommand()
+    private static Command CreateFrontendFeatureCommand(Option<string?> projectOption, Option<bool> yesOption)
     {
         var nameArgument = new Argument<string>("name") { Description = "Feature name" };
+
+        var withApiOption = new Option<bool>("--withApi")
+        {
+            Description = "Wire service methods to generated Swagger client when backend API exists",
+        };
 
         var frontendFeatureCommand = new Command(
             "frontend-feature",
@@ -137,11 +142,28 @@ internal static class NewCommands
             nameArgument,
         };
 
+        frontendFeatureCommand.Options.Add(withApiOption);
+        frontendFeatureCommand.Options.Add(projectOption);
+        frontendFeatureCommand.Options.Add(yesOption);
+
         frontendFeatureCommand.SetAction(parseResult =>
         {
             var name = parseResult.GetValue(nameArgument);
-            Console.WriteLine($"Creating frontend feature '{name}'");
-            return 0;
+            if (name == null)
+            {
+                Console.Error.WriteLine("Feature name is required.");
+                return 1;
+            }
+
+            return FrontendFeatureScaffolder.Scaffold(
+                new FrontendFeatureScaffoldRequest
+                {
+                    FeatureInput = name,
+                    WithApi = parseResult.GetValue(withApiOption),
+                    ProjectFlag = parseResult.GetValue(projectOption),
+                    Yes = parseResult.GetValue(yesOption),
+                }
+            );
         });
 
         return frontendFeatureCommand;

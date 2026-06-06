@@ -1,0 +1,11 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{ProjectNameSnake}}/core/api/api_connector.dart';
+import 'package:{{ProjectNameSnake}}/features/home/home_service.dart';
+
+final homeServiceProvider = Provider<HomeService>(
+  (ref) => HomeService(ref.watch(apiConnectorProvider)),
+);
+
+final homeStatusProvider = FutureProvider<String>(
+  (ref) => ref.watch(homeServiceProvider).fetchHealthStatus(),
+);

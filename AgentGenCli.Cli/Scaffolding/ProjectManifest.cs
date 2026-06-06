@@ -40,6 +40,7 @@ internal static class ProjectManifest
             InitializedAt = DateTimeOffset.UtcNow,
             Commands = [],
             Features = [],
+            FrontendFeatures = [],
         };
     }
 
@@ -62,6 +63,23 @@ internal static class ProjectManifest
 
         Save(root, document);
     }
+
+    public static void RecordFrontendFeature(
+        string root,
+        string featurePascalName,
+        ManifestCommandEntry entry
+    )
+    {
+        var document = Load(root);
+        document.Commands.Add(entry);
+
+        if (!document.FrontendFeatures.Contains(featurePascalName, StringComparer.Ordinal))
+        {
+            document.FrontendFeatures.Add(featurePascalName);
+        }
+
+        Save(root, document);
+    }
 }
 
 internal sealed class ProjectManifestDocument
@@ -73,6 +91,8 @@ internal sealed class ProjectManifestDocument
     public List<ManifestCommandEntry> Commands { get; set; } = [];
 
     public List<string> Features { get; set; } = [];
+
+    public List<string> FrontendFeatures { get; set; } = [];
 }
 
 internal sealed class ManifestCommandEntry

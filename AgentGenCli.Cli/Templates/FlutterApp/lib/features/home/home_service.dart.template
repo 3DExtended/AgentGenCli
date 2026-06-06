@@ -1,0 +1,19 @@
+import 'package:{{ProjectNameSnake}}/core/api/api_connector.dart';
+import 'package:{{ProjectNameSnake}}/generated/swaggen/swagger.swagger.dart';
+
+class HomeService {
+  HomeService(this._apiConnector);
+
+  final ApiConnector _apiConnector;
+
+  Future<String> fetchHealthStatus() async {
+    final client = await _apiConnector.getClient();
+    final response = await client.healthGet();
+
+    if (!response.isSuccessful || response.body == null) {
+      throw Exception('Health check failed (${response.statusCode})');
+    }
+
+    return response.body!.status?.toString() ?? 'Unknown';
+  }
+}

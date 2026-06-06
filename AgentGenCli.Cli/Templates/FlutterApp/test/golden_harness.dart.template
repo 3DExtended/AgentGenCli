@@ -1,0 +1,49 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:golden_toolkit/golden_toolkit.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+class GoldenHarness {
+  static const device = Device(
+    name: 'iPhone 15',
+    size: Size(393, 852),
+    devicePixelRatio: 3,
+    textScale: 1.0,
+    safeArea: EdgeInsets.fromLTRB(0, 59, 0, 34),
+  );
+
+  static Widget wrap(Widget child, Locale locale) {
+    return MaterialApp(
+      locale: locale,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      home: child,
+    );
+  }
+
+  static Future<void> pumpGolden(
+    WidgetTester tester,
+    Widget widget,
+    Locale locale,
+    String goldenPath,
+  ) async {
+    await tester.pumpWidgetBuilder(
+      wrap(widget, locale),
+      wrapper: (child) => child,
+      surfaceSize: device.size,
+    );
+    await tester.pumpAndSettle();
+
+    await expectLater(
+      find.byType(MaterialApp),
+      matchesGoldenFile(goldenPath),
+    );
+  }
+}

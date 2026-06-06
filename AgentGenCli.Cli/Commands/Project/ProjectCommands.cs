@@ -12,8 +12,31 @@ internal static class ProjectCommands
         var projectOption = CreateProjectOption();
         projectCommand.Options.Add(projectOption);
         projectCommand.Subcommands.Add(CreateEfMigrateCommand(projectOption));
+        projectCommand.Subcommands.Add(CreateSyncOpenApiCommand(projectOption));
 
         return projectCommand;
+    }
+
+    private static Command CreateSyncOpenApiCommand(Option<string?> projectOption)
+    {
+        var syncOpenApiCommand = new Command("sync-openapi", "Export swagger.json and regenerate Flutter API client");
+
+        syncOpenApiCommand.Options.Add(projectOption);
+        syncOpenApiCommand.SetAction(parseResult =>
+        {
+            try
+            {
+                var context = ProjectContext.Resolve(projectFlag: parseResult.GetValue(projectOption));
+                return OpenApiSyncHelper.Sync(context);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+                return 1;
+            }
+        });
+
+        return syncOpenApiCommand;
     }
 
     private static Command CreateEfMigrateCommand(Option<string?> projectOption)

@@ -1,0 +1,62 @@
+import 'package:chopper/chopper.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{ProjectNameSnake}}/core/constants.dart';
+import 'package:{{ProjectNameSnake}}/generated/swaggen/swagger.swagger.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+
+const jwtStorageKey = 'jwt';
+
+final apiConnectorProvider = Provider<ApiConnector>((ref) => ApiConnector());
+
+class ApiConnector {
+  Swagger? _cachedClient;
+
+  Future<String?> getJwt() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(jwtStorageKey);
+  }
+
+  Future<void> setJwt(String jwt) async {
+    clearCache();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(jwtStorageKey, jwt);
+  }
+
+  Future<void> clearJwt() async {
+    clearCache();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(jwtStorageKey);
+  }
+
+  void clearCache() {
+    _cachedClient = null;
+  }
+
+  Future<Swagger> getClient({bool requiresJwt = false}) async {
+    if (_cachedClient != null) {
+      return _cachedClient!;
+    }
+
+    final interceptors = <Interceptor>[];
+    final jwt = await getJwt();
+    if (jwt != null) {
+      interceptors.add(HeadersInterceptor({'Authorization': 'Bearer $jwt'}));
+    } else if (requiresJwt) {
+      throw StateError('JWT required but not available.');
+    }
+
+    final client = Swagger.create(
+      client: ChopperClient(
+        client: http.Client(),
+        services: [Swagger.create(baseUrl: Uri.parse(apiBaseUrl))],
+        converter: $JsonSerializableConverter(),
+        interceptors: interceptors,
+        baseUrl: Uri.parse(apiBaseUrl),
+      ),
+    );
+
+    _cachedClient = client;
+    return client;
+  }
+}

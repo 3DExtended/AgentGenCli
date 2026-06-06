@@ -80,6 +80,14 @@ internal sealed class ProjectContext
     public string FeatureRegistrationPath =>
         Path.Combine(Root, "applications", $"{ProjectName}.Api", "FeatureRegistration.cs");
 
+    public string FlutterAppDir => Path.Combine(Root, "applications", ProjectName.ToLowerInvariant());
+
+    public string FlutterAppRelativePath =>
+        Path.Combine("applications", ProjectName.ToLowerInvariant());
+
+    public string FlutterRouterPath =>
+        Path.Combine(FlutterAppDir, "lib", "core", "router", "app_router.dart");
+
     private static void ValidateLayout(string root)
     {
         var requiredDirectories = new[] { "applications", "common", "features", "tests" };

@@ -1,0 +1,40 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{ProjectNameSnake}}/features/{{FeatureNameLower}}/{{FeatureNameLower}}_provider.dart';
+import 'package:{{ProjectNameSnake}}/features/{{FeatureNameLower}}/widgets/{{FeatureNameLower}}_placeholder_widget.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+class {{FeatureName}}Screen extends ConsumerWidget {
+  const {{FeatureName}}Screen({super.key, this.previewMessage});
+
+  final String? previewMessage;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (previewMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('{{FeatureName}}')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: {{FeatureName}}PlaceholderWidget(message: previewMessage!),
+        ),
+      );
+    }
+
+    final messageAsync = ref.watch({{FeatureNameLower}}MessageProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text('{{FeatureName}}')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: messageAsync.when(
+          loading: () => const {{FeatureName}}PlaceholderWidget(message: 'Loading...'),
+          error: (_, __) => {{FeatureName}}PlaceholderWidget(message: l10n.homeUnhealthy),
+          data: (message) => {{FeatureName}}PlaceholderWidget(message: message),
+        ),
+      ),
+    );
+  }
+}

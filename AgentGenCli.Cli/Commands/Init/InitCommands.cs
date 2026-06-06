@@ -96,7 +96,7 @@ internal static class InitCommands
 
             if (backend == "dotnet")
             {
-                return ProjectScaffolder.ScaffoldDotnetBackend(name);
+                return ProjectScaffolder.ScaffoldProject(name, frontend);
             }
 
             Console.WriteLine($"Unknown backend template '{backend}'");

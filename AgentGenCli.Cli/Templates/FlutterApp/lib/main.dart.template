@@ -1,0 +1,25 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{ProjectNameSnake}}/core/router/app_router.dart';
+import 'package:{{ProjectNameSnake}}/core/theme/app_theme.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+void main() {
+  runApp(const ProviderScope(child: {{ProjectName}}App()));
+}
+
+class {{ProjectName}}App extends StatelessWidget {
+  const {{ProjectName}}App({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      title: '{{ProjectName}}',
+      theme: AppTheme.light(),
+      locale: const Locale('de'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      routerConfig: appRouter,
+    );
+  }
+}

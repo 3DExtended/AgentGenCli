@@ -10,12 +10,18 @@ internal sealed class TemplateTokens
 
     public string ProjectNameLower => ProjectName.ToLowerInvariant();
 
+    public string ProjectNameSnake => NameFormatting.ToSnakeCase(ProjectName);
+
+    public string FlutterAppRelativePath => $"applications/{ProjectNameLower}";
+
     public IReadOnlyDictionary<string, string> ToDictionary()
     {
         var dictionary = new Dictionary<string, string>
         {
             ["{{ProjectName}}"] = ProjectName,
             ["{{ProjectNameLower}}"] = ProjectNameLower,
+            ["{{ProjectNameSnake}}"] = ProjectNameSnake,
+            ["{{FlutterAppRelativePath}}"] = FlutterAppRelativePath,
         };
 
         if (!string.IsNullOrEmpty(FeatureName))
@@ -45,6 +51,10 @@ internal static class TemplateEngine
     public static string GetTemplateRoot() => GetTemplateRoot("Project");
 
     public static string GetBackendFeatureTemplateRoot() => GetTemplateRoot("BackendFeature");
+
+    public static string GetFlutterAppTemplateRoot() => GetTemplateRoot("FlutterApp");
+
+    public static string GetFrontendFeatureTemplateRoot() => GetTemplateRoot("FrontendFeature");
 
     private static string GetTemplateRoot(string folder)
     {
@@ -107,6 +117,11 @@ internal static class TemplateEngine
         if (replacements.TryGetValue("{{ProjectName}}", out var projectName))
         {
             result = result.Replace("ProjectName", projectName, StringComparison.Ordinal);
+        }
+
+        if (replacements.TryGetValue("{{FeatureNameLower}}", out var featureNameLower))
+        {
+            result = result.Replace("FeatureNameLower", featureNameLower, StringComparison.Ordinal);
         }
 
         if (replacements.TryGetValue("{{FeatureName}}", out var featureName))

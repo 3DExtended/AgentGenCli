@@ -4,7 +4,12 @@ namespace AgentGenCli.Cli.Scaffolding;
 
 internal static class ProcessRunner
 {
-    public static int Run(string fileName, string arguments, string? workingDirectory = null)
+    public static int Run(
+        string fileName,
+        string arguments,
+        string? workingDirectory = null,
+        IReadOnlyDictionary<string, string>? environment = null
+    )
     {
         var process = new Process
         {
@@ -20,7 +25,14 @@ internal static class ProcessRunner
             },
         };
 
-        process.StartInfo.WorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory();
+        if (environment != null)
+        {
+            foreach (var (key, value) in environment)
+            {
+                process.StartInfo.Environment[key] = value;
+            }
+        }
+
         process.Start();
 
         var output = process.StandardOutput.ReadToEnd();
@@ -38,5 +50,11 @@ internal static class ProcessRunner
         }
 
         return process.ExitCode;
+    }
+
+    public static bool IsCommandAvailable(string command)
+    {
+        var exitCode = Run(command, "--version");
+        return exitCode == 0;
     }
 }

@@ -1,0 +1,25 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{ProjectNameSnake}}/features/{{FeatureNameLower}}/widgets/{{FeatureNameLower}}_placeholder_widget.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+import '../../../golden_harness.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('{{FeatureNameLower}} placeholder golden (${locale.languageCode})', (
+      tester,
+    ) async {
+      await GoldenHarness.pumpGolden(
+        tester,
+        {{FeatureName}}PlaceholderWidget(
+          message: locale.languageCode == 'de' ? '{{FeatureName}} Inhalt' : '{{FeatureName}} content',
+        ),
+        locale,
+        'goldens/{{FeatureNameLower}}_placeholder_${locale.languageCode}.png',
+      );
+    });
+  }
+}

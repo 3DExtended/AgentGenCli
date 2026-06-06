@@ -1,0 +1,44 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:{{ProjectNameSnake}}/features/home/home_provider.dart';
+import 'package:{{ProjectNameSnake}}/features/home/widgets/home_status_card.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+class HomeScreen extends ConsumerWidget {
+  const HomeScreen({super.key, this.previewStatus});
+
+  final String? previewStatus;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
+    if (previewStatus != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text(l10n.homeTitle)),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: HomeStatusCard(status: previewStatus!),
+        ),
+      );
+    }
+
+    final statusAsync = ref.watch(homeStatusProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(l10n.homeTitle)),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: statusAsync.when(
+          loading: () => HomeStatusCard(status: l10n.homeLoading),
+          error: (_, __) => HomeStatusCard(status: l10n.homeUnhealthy),
+          data: (status) => HomeStatusCard(
+            status: status.toLowerCase().contains('healthy')
+                ? l10n.homeHealthy
+                : status,
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "@@locale": "en",
+  "appTitle": "{{ProjectName}}",
+  "homeTitle": "Home",
+  "homeLoading": "Loading system status...",
+  "homeHealthy": "System is healthy",
+  "homeUnhealthy": "System is unavailable",
+  "homeStatusLabel": "Status"
+}

@@ -1,0 +1,31 @@
+import 'package:flutter/material.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+class HomeStatusCard extends StatelessWidget {
+  const HomeStatusCard({super.key, required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.homeStatusLabel,
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 8),
+            Text(status),
+          ],
+        ),
+      ),
+    );
+  }
+}
