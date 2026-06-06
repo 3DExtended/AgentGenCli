@@ -1,0 +1,8 @@
+namespace {{ProjectName}}.Common.Models.HealthCheck;
+
+public enum HealthStatus
+{
+    Healthy,
+    Degraded,
+    Unhealthy,
+}
