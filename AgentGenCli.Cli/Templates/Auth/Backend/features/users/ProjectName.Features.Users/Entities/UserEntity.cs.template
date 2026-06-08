@@ -1,0 +1,12 @@
+namespace {{ProjectName}}.Features.Users.Entities;
+
+public class UserEntity
+{
+    public Guid Id { get; set; }
+
+    public string Username { get; set; } = string.Empty;
+
+    public string NormalizedUsername { get; set; } = string.Empty;
+
+    public DateTimeOffset CreatedAt { get; set; }
+}

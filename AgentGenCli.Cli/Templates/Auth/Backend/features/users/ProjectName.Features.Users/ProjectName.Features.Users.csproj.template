@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>{{ProjectName}}.Features.Users</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ProjectName.Features.Users.Contracts\ProjectName.Features.Users.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\common\ProjectName.Common\ProjectName.Common.csproj" />
+    <ProjectReference Include="..\..\..\common\ProjectName.Common.SendGrid\ProjectName.Common.SendGrid.csproj" />
+    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.csproj" />
+    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.Abstractions\Prodot.Patterns.Cqrs.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.EfCore\Prodot.Patterns.Cqrs.EfCore.csproj" />
+    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.EfCore.Abstractions\Prodot.Patterns.Cqrs.EfCore.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection\Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection.csproj" />
+  </ItemGroup>
+
+</Project>

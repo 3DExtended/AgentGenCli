@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>{{ProjectName}}.Features.Users.Contracts</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.csproj" />
+    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.Abstractions\Prodot.Patterns.Cqrs.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

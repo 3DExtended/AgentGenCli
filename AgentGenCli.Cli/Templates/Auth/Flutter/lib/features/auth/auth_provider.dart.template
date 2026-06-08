@@ -1,0 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
+import 'package:{{ProjectNameSnake}}/core/api/api_connector.dart';
+import 'package:{{ProjectNameSnake}}/features/auth/auth_notifier.dart';
+import 'package:{{ProjectNameSnake}}/features/auth/auth_service.dart';
+
+final authNotifierProvider = ChangeNotifierProvider<AuthNotifier>((ref) {
+  final notifier = AuthNotifier(ref.watch(apiConnectorProvider), ref.watch(authServiceProvider));
+  notifier.initialize();
+  return notifier;
+});
+
+final authServiceProvider = Provider<AuthService>(
+  (ref) => AuthService(ref.watch(apiConnectorProvider)),
+);

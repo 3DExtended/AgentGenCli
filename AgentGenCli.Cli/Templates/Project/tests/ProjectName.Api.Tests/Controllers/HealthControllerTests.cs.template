@@ -5,19 +5,19 @@ using {{ProjectName}}.Common.Models.HealthCheck;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace {{ProjectName}}.Api.Tests;
+namespace {{ProjectName}}.Api.Tests.Controllers;
 
-public class HealthEndpointTests : IClassFixture<WebApplicationFactory<ApiEntryPoint>>
+public class HealthControllerTests : IClassFixture<WebApplicationFactory<ApiEntryPoint>>
 {
     private readonly WebApplicationFactory<ApiEntryPoint> _factory;
 
-    public HealthEndpointTests(WebApplicationFactory<ApiEntryPoint> factory)
+    public HealthControllerTests(WebApplicationFactory<ApiEntryPoint> factory)
     {
         _factory = factory;
     }
 
     [Fact]
-    public async Task Health_returns_health_check_report()
+    public async Task Get_returns_health_check_report()
     {
         var client = _factory
             .WithWebHostBuilder(builder => builder.UseEnvironment("E2ETest"))

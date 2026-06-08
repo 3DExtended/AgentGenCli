@@ -1,0 +1,69 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Common.Services;
+using {{ProjectName}}.Features.Users.Contracts.Models;
+using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
+using {{ProjectName}}.Features.Users.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
+
+public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, User.UserIdentifier>
+{
+    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
+    private readonly IQueryProcessor _queryProcessor;
+    private readonly ISystemClock _systemClock;
+
+    public UserCreateQueryHandler(
+        IDbContextFactory<{{ProjectName}}DbContext> contextFactory,
+        IQueryProcessor queryProcessor,
+        ISystemClock systemClock
+    )
+    {
+        _contextFactory = contextFactory;
+        _queryProcessor = queryProcessor;
+        _systemClock = systemClock;
+    }
+
+    public IQueryHandler<UserCreateQuery, User.UserIdentifier> Successor { get; set; } = default!;
+
+    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+        UserCreateQuery query,
+        CancellationToken cancellationToken
+    )
+    {
+        var userId = Guid.NewGuid();
+
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        context.Set<UserEntity>().Add(
+            new UserEntity
+            {
+                Id = userId,
+                Username = query.ModelToCreate.Username,
+                NormalizedUsername = query.ModelToCreate.Username.Trim().ToLowerInvariant(),
+                CreatedAt = _systemClock.UtcNow,
+            }
+        );
+        await context.SaveChangesAsync(cancellationToken);
+
+        if (query.UserCredentials != null)
+        {
+            query.UserCredentials.UserId = User.UserIdentifier.From(userId);
+            var credentialsResult = await new UserCredentialsCreateQuery
+            {
+                ModelToCreate = query.UserCredentials,
+            }
+                .RunAsync(_queryProcessor, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (credentialsResult.IsNone)
+            {
+                return Option<User.UserIdentifier>.None;
+            }
+        }
+
+        return User.UserIdentifier.From(userId);
+    }
+}

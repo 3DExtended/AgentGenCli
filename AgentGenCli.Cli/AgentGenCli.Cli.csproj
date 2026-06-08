@@ -19,9 +19,13 @@
     <Compile Remove="Templates\BackendFeature\**\*" />
     <Compile Remove="Templates\FlutterApp\**\*" />
     <Compile Remove="Templates\FrontendFeature\**\*" />
+    <Compile Remove="Templates\Email\**\*" />
+    <Compile Remove="Templates\Auth\**\*" />
     <None Include="Templates\Project\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\Project" />
     <None Include="Templates\BackendFeature\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\BackendFeature" />
     <None Include="Templates\FlutterApp\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\FlutterApp" />
     <None Include="Templates\FrontendFeature\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\FrontendFeature" />
+    <None Include="Templates\Email\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\Email" />
+    <None Include="Templates\Auth\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" LinkBase="Templates\Auth" />
   </ItemGroup>
 </Project>

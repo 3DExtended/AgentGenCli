@@ -50,6 +50,24 @@ Each new feature adds its assembly to that list. Avoid manual edits unless you u
 - Swagger filters in `applications/{{ProjectName}}.Api/Swagger/`
 - OpenAPI export used by Flutter when frontend is enabled: `agentGenCli project sync-openapi`
 
+## Testing
+
+Every query handler and API controller must have a matching test class. Meta-tests enforce this at `dotnet test` by reflecting over each production assembly and failing when `{Name}Tests` is missing.
+
+| Production assembly | Test project | Meta-test | Unit/integration tests |
+|---------------------|--------------|-----------|------------------------|
+| `{{ProjectName}}.Common` | `{{ProjectName}}.Common.Tests` | `QueryHandlers/QueryHandlerCoverageTests.cs` | `QueryHandlers/.../{Name}QueryHandlerTests.cs` |
+| `{{ProjectName}}.Features.{Feature}` | `{{ProjectName}}.Features.{Feature}.Tests` | `QueryHandlers/QueryHandlerCoverageTests.cs` | `QueryHandlers/{Name}QueryHandlerTests.cs` |
+| `{{ProjectName}}.Api` | `{{ProjectName}}.Api.Tests` | `Controllers/ControllerCoverageTests.cs` | `Controllers/{Name}ControllerTests.cs` |
+
+Opt out with `[ExcludeFromCoverageTests]` from `{{ProjectName}}.Common` when a type genuinely should not require a test class.
+
+`new backend-feature` scaffolds handler test stubs for every handler it creates. API controller tests use the `E2ETest` environment (no database/migrations).
+
+```bash
+dotnet test
+```
+
 ## Local run
 
 ```bash

@@ -56,6 +56,10 @@ internal static class TemplateEngine
 
     public static string GetFrontendFeatureTemplateRoot() => GetTemplateRoot("FrontendFeature");
 
+    public static string GetEmailTemplateRoot() => GetTemplateRoot("Email");
+
+    public static string GetAuthTemplateRoot() => GetTemplateRoot("Auth");
+
     private static string GetTemplateRoot(string folder)
     {
         var baseDir = AppContext.BaseDirectory;
@@ -90,7 +94,17 @@ internal static class TemplateEngine
 
     public static void CopyFile(string templateRelativePath, string destinationPath, TemplateTokens tokens)
     {
-        var sourcePath = Path.Combine(GetTemplateRoot(), templateRelativePath);
+        CopyFileFrom(templateRelativePath, destinationPath, tokens, GetTemplateRoot());
+    }
+
+    public static void CopyFileFrom(
+        string templateRelativePath,
+        string destinationPath,
+        TemplateTokens tokens,
+        string templateRoot
+    )
+    {
+        var sourcePath = Path.Combine(templateRoot, templateRelativePath);
         if (!File.Exists(sourcePath))
         {
             throw new FileNotFoundException($"Template file not found: {sourcePath}");
@@ -136,10 +150,17 @@ internal static class TemplateEngine
         string templateRootRelative,
         string destinationRoot,
         TemplateTokens tokens,
-        Func<string, bool>? includeFile = null
+        Func<string, bool>? includeFile = null,
+        string? templateRootKind = null
     )
     {
-        var sourceRoot = Path.Combine(GetBackendFeatureTemplateRoot(), templateRootRelative);
+        var rootFolder = templateRootKind switch
+        {
+            "Email" => GetEmailTemplateRoot(),
+            "Auth" => GetAuthTemplateRoot(),
+            _ => GetBackendFeatureTemplateRoot(),
+        };
+        var sourceRoot = Path.Combine(rootFolder, templateRootRelative);
         if (!Directory.Exists(sourceRoot))
         {
             throw new DirectoryNotFoundException($"Template directory not found: {sourceRoot}");

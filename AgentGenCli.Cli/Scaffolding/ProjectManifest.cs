@@ -38,10 +38,61 @@ internal static class ProjectManifest
         {
             ProjectName = projectName,
             InitializedAt = DateTimeOffset.UtcNow,
+            EmailInitialized = false,
+            AuthInitialized = false,
             Commands = [],
             Features = [],
             FrontendFeatures = [],
         };
+    }
+
+    public static void EnsureEmailNotInitialized(string root)
+    {
+        var document = Load(root);
+        if (document.EmailInitialized)
+        {
+            throw new InvalidOperationException(
+                "Email scaffolding is already initialized. See '.agentGenCli.json' (emailInitialized: true)."
+            );
+        }
+    }
+
+    public static void EnsureAuthNotInitialized(string root)
+    {
+        var document = Load(root);
+        if (document.AuthInitialized)
+        {
+            throw new InvalidOperationException(
+                "Auth scaffolding is already initialized. See '.agentGenCli.json' (authInitialized: true)."
+            );
+        }
+    }
+
+    public static void MarkEmailInitialized(string root, ManifestCommandEntry entry)
+    {
+        var document = Load(root);
+        document.EmailInitialized = true;
+        document.Commands.Add(entry);
+        Save(root, document);
+    }
+
+    public static void MarkAuthInitialized(string root, ManifestCommandEntry entry)
+    {
+        var document = Load(root);
+        document.AuthInitialized = true;
+        document.Commands.Add(entry);
+
+        if (!document.Features.Contains("Users", StringComparer.Ordinal))
+        {
+            document.Features.Add("Users");
+        }
+
+        if (!document.FrontendFeatures.Contains("Auth", StringComparer.Ordinal))
+        {
+            document.FrontendFeatures.Add("Auth");
+        }
+
+        Save(root, document);
     }
 
     public static void RecordCommand(string root, ManifestCommandEntry entry)
@@ -93,6 +144,10 @@ internal sealed class ProjectManifestDocument
     public List<string> Features { get; set; } = [];
 
     public List<string> FrontendFeatures { get; set; } = [];
+
+    public bool EmailInitialized { get; set; }
+
+    public bool AuthInitialized { get; set; }
 }
 
 internal sealed class ManifestCommandEntry

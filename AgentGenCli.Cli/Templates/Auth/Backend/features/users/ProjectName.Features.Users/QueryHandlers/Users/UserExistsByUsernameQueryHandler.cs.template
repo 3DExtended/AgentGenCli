@@ -1,0 +1,42 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
+using {{ProjectName}}.Features.Users.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
+
+public class UserExistsByUsernameQueryHandler : IQueryHandler<UserExistsByUsernameQuery, bool>
+{
+    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
+
+    public UserExistsByUsernameQueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
+    {
+        _contextFactory = contextFactory;
+    }
+
+    public IQueryHandler<UserExistsByUsernameQuery, bool> Successor { get; set; } = default!;
+
+    public async Task<Option<bool>> RunQueryAsync(
+        UserExistsByUsernameQuery query,
+        CancellationToken cancellationToken
+    )
+    {
+        if (string.IsNullOrWhiteSpace(query.Username))
+        {
+            return Option<bool>.None;
+        }
+
+        var normalized = query.Username.Trim().ToLowerInvariant();
+
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var exists = await context
+            .Set<UserEntity>()
+            .AsNoTracking()
+            .AnyAsync(x => x.NormalizedUsername == normalized, cancellationToken);
+
+        return exists;
+    }
+}

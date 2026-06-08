@@ -1,0 +1,49 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Features.Users.Contracts.Models;
+using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
+using {{ProjectName}}.Features.Users.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
+
+public class UserGetByInternalIdQueryHandler : IQueryHandler<UserGetByInternalIdQuery, User.UserIdentifier>
+{
+    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
+
+    public UserGetByInternalIdQueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
+    {
+        _contextFactory = contextFactory;
+    }
+
+    public IQueryHandler<UserGetByInternalIdQuery, User.UserIdentifier> Successor { get; set; } = default!;
+
+    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+        UserGetByInternalIdQuery query,
+        CancellationToken cancellationToken
+    )
+    {
+        if (string.IsNullOrWhiteSpace(query.InternalId))
+        {
+            return Option<User.UserIdentifier>.None;
+        }
+
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var credentials = await context
+            .Set<UserCredentialsEntity>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.InternalId == query.InternalId && !x.Deleted,
+                cancellationToken
+            );
+
+        if (credentials == null)
+        {
+            return Option<User.UserIdentifier>.None;
+        }
+
+        return User.UserIdentifier.From(credentials.UserId);
+    }
+}

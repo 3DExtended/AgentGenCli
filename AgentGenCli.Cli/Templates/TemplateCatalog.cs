@@ -2,7 +2,7 @@ namespace AgentGenCli.Cli.Templates;
 
 internal static class TemplateCatalog
 {
-    public static IReadOnlyList<string> InitTemplates { get; } = ["project", "auth"];
+    public static IReadOnlyList<string> InitTemplates { get; } = ["project", "email", "auth"];
 
     public static IReadOnlyList<string> NewTemplates { get; } =
     ["backend-feature", "frontend-feature", "efmigration"];

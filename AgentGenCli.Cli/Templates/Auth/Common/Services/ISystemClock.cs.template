@@ -1,0 +1,6 @@
+namespace {{ProjectName}}.Common.Services;
+
+public interface ISystemClock
+{
+    DateTimeOffset UtcNow { get; }
+}

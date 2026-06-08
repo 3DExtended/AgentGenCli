@@ -1,0 +1,66 @@
+using {{ProjectName}}.Common.Services;
+using {{ProjectName}}.Features.Users.Contracts.Models;
+using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
+
+public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.UserIdentifier>
+{
+    private readonly IQueryProcessor _queryProcessor;
+    private readonly IEmailProtectionService _emailProtectionService;
+    private readonly IPasswordHasherService _passwordHasherService;
+
+    public UserRegisterQueryHandler(
+        IQueryProcessor queryProcessor,
+        IEmailProtectionService emailProtectionService,
+        IPasswordHasherService passwordHasherService
+    )
+    {
+        _queryProcessor = queryProcessor;
+        _emailProtectionService = emailProtectionService;
+        _passwordHasherService = passwordHasherService;
+    }
+
+    public IQueryHandler<UserRegisterQuery, User.UserIdentifier> Successor { get; set; } = default!;
+
+    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+        UserRegisterQuery query,
+        CancellationToken cancellationToken
+    )
+    {
+        var usernameExists = await new UserExistsByUsernameQuery { Username = query.Username }
+            .RunAsync(_queryProcessor, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (usernameExists.IsNone || usernameExists.Get())
+        {
+            return Option<User.UserIdentifier>.None;
+        }
+
+        var emailExists = await new UserExistsByEmailQuery { Email = query.Email }
+            .RunAsync(_queryProcessor, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (emailExists.IsNone || emailExists.Get())
+        {
+            return Option<User.UserIdentifier>.None;
+        }
+
+        return await new UserCreateQuery
+        {
+            ModelToCreate = new User { Username = query.Username },
+            UserCredentials = new UserCredentials
+            {
+                Username = query.Username,
+                PasswordHash = _passwordHasherService.HashPassword(query.Password),
+                SignInProvider = false,
+                EmailCiphertext = _emailProtectionService.EncryptEmail(query.Email),
+                EmailLookupHash = _emailProtectionService.ComputeLookupHash(query.Email),
+            },
+        }
+            .RunAsync(_queryProcessor, cancellationToken)
+            .ConfigureAwait(false);
+    }
+}

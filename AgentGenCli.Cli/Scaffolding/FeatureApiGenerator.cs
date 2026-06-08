@@ -156,7 +156,7 @@ internal static class FeatureApiGenerator
             using Microsoft.AspNetCore.Hosting;
             using Microsoft.AspNetCore.Mvc.Testing;
 
-            namespace {{project}}.Api.Tests;
+            namespace {{project}}.Api.Tests.Controllers;
 
             public class {{name}}ControllerTests : IClassFixture<WebApplicationFactory<ApiEntryPoint>>
             {

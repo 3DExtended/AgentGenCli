@@ -1,0 +1,58 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Common.Services;
+using {{ProjectName}}.Features.Users.Contracts.Models;
+using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
+using {{ProjectName}}.Features.Users.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
+
+public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, User.UserIdentifier>
+{
+    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
+    private readonly IPasswordHasherService _passwordHasherService;
+
+    public UserLoginQueryHandler(
+        IDbContextFactory<{{ProjectName}}DbContext> contextFactory,
+        IPasswordHasherService passwordHasherService
+    )
+    {
+        _contextFactory = contextFactory;
+        _passwordHasherService = passwordHasherService;
+    }
+
+    public IQueryHandler<UserLoginQuery, User.UserIdentifier> Successor { get; set; } = default!;
+
+    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+        UserLoginQuery query,
+        CancellationToken cancellationToken
+    )
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var credentials = await context
+            .Set<UserCredentialsEntity>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(
+                x => x.Username == query.Username && !x.Deleted,
+                cancellationToken
+            );
+
+        if (credentials == null || credentials.SignInProvider)
+        {
+            return Option<User.UserIdentifier>.None;
+        }
+
+        if (
+            string.IsNullOrEmpty(credentials.PasswordHash)
+            || !_passwordHasherService.VerifyPassword(credentials.PasswordHash, query.Password)
+        )
+        {
+            return Option<User.UserIdentifier>.None;
+        }
+
+        return User.UserIdentifier.From(credentials.UserId);
+    }
+}

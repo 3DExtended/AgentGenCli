@@ -1,0 +1,12 @@
+using {{ProjectName}}.Api.Controllers.Authorization;
+
+namespace {{ProjectName}}.Api.Tests.Controllers.Authorization;
+
+public class RegisterControllerTests
+{
+    [Fact]
+    public void Controller_type_is_registered()
+    {
+        Assert.NotNull(typeof(RegisterController));
+    }
+}

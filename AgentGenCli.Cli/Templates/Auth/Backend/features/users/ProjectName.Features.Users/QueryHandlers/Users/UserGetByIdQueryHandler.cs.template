@@ -1,0 +1,42 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Features.Users.Contracts.Models;
+using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
+using {{ProjectName}}.Features.Users.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
+
+public class UserGetByIdQueryHandler : IQueryHandler<UserGetByIdQuery, User>
+{
+    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
+
+    public UserGetByIdQueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
+    {
+        _contextFactory = contextFactory;
+    }
+
+    public IQueryHandler<UserGetByIdQuery, User> Successor { get; set; } = default!;
+
+    public async Task<Option<User>> RunQueryAsync(UserGetByIdQuery query, CancellationToken cancellationToken)
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var entity = await context
+            .Set<UserEntity>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == query.UserId.ToGuid(), cancellationToken);
+
+        if (entity == null)
+        {
+            return Option<User>.None;
+        }
+
+        return new User
+        {
+            Id = User.UserIdentifier.From(entity.Id),
+            Username = entity.Username,
+        };
+    }
+}

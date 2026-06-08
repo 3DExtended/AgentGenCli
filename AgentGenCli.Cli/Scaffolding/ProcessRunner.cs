@@ -35,9 +35,12 @@ internal static class ProcessRunner
 
         process.Start();
 
-        var output = process.StandardOutput.ReadToEnd();
-        var error = process.StandardError.ReadToEnd();
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
         process.WaitForExit();
+
+        var output = outputTask.GetAwaiter().GetResult();
+        var error = errorTask.GetAwaiter().GetResult();
 
         if (!string.IsNullOrWhiteSpace(output))
         {
@@ -49,6 +52,28 @@ internal static class ProcessRunner
             Console.Error.WriteLine(error.TrimEnd());
         }
 
+        return process.ExitCode;
+    }
+
+    public static int RunWithInheritedConsole(
+        string fileName,
+        string arguments,
+        string? workingDirectory = null
+    )
+    {
+        var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = fileName,
+                Arguments = arguments,
+                UseShellExecute = false,
+                WorkingDirectory = workingDirectory ?? Directory.GetCurrentDirectory(),
+            },
+        };
+
+        process.Start();
+        process.WaitForExit();
         return process.ExitCode;
     }
 

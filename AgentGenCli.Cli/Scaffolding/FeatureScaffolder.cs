@@ -301,6 +301,24 @@ internal static class FeatureScaffolder
                 ),
                 tokens
             );
+            CopyTemplateFile(
+                "crud/R/GetFeatureQueryHandlerTests.cs.template",
+                Path.Combine(
+                    context.FeatureTestsDir(feature),
+                    "QueryHandlers",
+                    $"Get{feature.PascalName}QueryHandlerTests.cs"
+                ),
+                tokens
+            );
+            CopyTemplateFile(
+                "crud/R/ListFeatureQueryHandlerTests.cs.template",
+                Path.Combine(
+                    context.FeatureTestsDir(feature),
+                    "QueryHandlers",
+                    $"List{feature.PascalName}QueryHandlerTests.cs"
+                ),
+                tokens
+            );
         }
 
         if (crudLetters.Contains('U', StringComparison.Ordinal))
@@ -319,6 +337,15 @@ internal static class FeatureScaffolder
                 ),
                 tokens
             );
+            CopyTemplateFile(
+                "crud/U/UpdateFeatureQueryHandlerTests.cs.template",
+                Path.Combine(
+                    context.FeatureTestsDir(feature),
+                    "QueryHandlers",
+                    $"Update{feature.PascalName}QueryHandlerTests.cs"
+                ),
+                tokens
+            );
         }
 
         if (crudLetters.Contains('D', StringComparison.Ordinal))
@@ -334,6 +361,15 @@ internal static class FeatureScaffolder
                     context.FeatureProjectDir(feature),
                     "QueryHandlers",
                     $"Delete{feature.PascalName}QueryHandler.cs"
+                ),
+                tokens
+            );
+            CopyTemplateFile(
+                "crud/D/DeleteFeatureQueryHandlerTests.cs.template",
+                Path.Combine(
+                    context.FeatureTestsDir(feature),
+                    "QueryHandlers",
+                    $"Delete{feature.PascalName}QueryHandlerTests.cs"
                 ),
                 tokens
             );
@@ -357,6 +393,7 @@ internal static class FeatureScaffolder
             context.Root,
             "tests",
             $"{context.ProjectName}.Api.Tests",
+            "Controllers",
             $"{feature.PascalName}ControllerTests.cs"
         );
 

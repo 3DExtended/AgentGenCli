@@ -1,0 +1,72 @@
+import 'package:flutter/foundation.dart';
+import 'package:{{ProjectNameSnake}}/core/api/api_connector.dart';
+import 'package:{{ProjectNameSnake}}/features/auth/auth_service.dart';
+
+class AuthNotifier extends ChangeNotifier {
+  AuthNotifier(this._apiConnector, this._authService);
+
+  final ApiConnector _apiConnector;
+  final AuthService _authService;
+
+  bool _initialized = false;
+  bool _isAuthenticated = false;
+
+  bool get isAuthenticated => _isAuthenticated;
+
+  Future<void> initialize() async {
+    final jwt = await _apiConnector.getJwt();
+    _isAuthenticated = jwt != null && jwt.isNotEmpty;
+    _initialized = true;
+    notifyListeners();
+  }
+
+  Future<void> loginWithPassword({
+    required String username,
+    required String password,
+  }) async {
+    final token = await _authService.login(username: username, password: password);
+    await _apiConnector.setJwt(token);
+    _isAuthenticated = true;
+    notifyListeners();
+  }
+
+  Future<void> register({
+    required String username,
+    required String email,
+    required String password,
+  }) async {
+    final token = await _authService.register(
+      username: username,
+      email: email,
+      password: password,
+    );
+    await _apiConnector.setJwt(token);
+    _isAuthenticated = true;
+    notifyListeners();
+  }
+
+  Future<void> completeSsoRegistration({
+    required String username,
+    required String registrationToken,
+  }) async {
+    final token = await _authService.completeSsoRegistration(
+      username: username,
+      registrationToken: registrationToken,
+    );
+    await _apiConnector.setJwt(token);
+    _isAuthenticated = true;
+    notifyListeners();
+  }
+
+  Future<String?> signInWithGoogle() => _authService.signInWithGoogle();
+
+  Future<String?> signInWithApple() => _authService.signInWithApple();
+
+  Future<void> logout() async {
+    await _apiConnector.clearJwt();
+    _isAuthenticated = false;
+    notifyListeners();
+  }
+
+  bool get initialized => _initialized;
+}

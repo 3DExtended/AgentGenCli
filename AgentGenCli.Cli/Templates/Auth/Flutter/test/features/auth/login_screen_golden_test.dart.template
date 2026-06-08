@@ -1,0 +1,21 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:{{ProjectNameSnake}}/features/auth/login_screen.dart';
+import 'package:{{ProjectNameSnake}}/l10n/app_localizations.dart';
+
+import '../../golden_harness.dart';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  for (final locale in AppLocalizations.supportedLocales) {
+    testWidgets('login screen golden (${locale.languageCode})', (tester) async {
+      await GoldenHarness.pumpGolden(
+        tester,
+        const LoginScreen(),
+        locale,
+        'goldens/login_screen_${locale.languageCode}.png',
+      );
+    });
+  }
+}

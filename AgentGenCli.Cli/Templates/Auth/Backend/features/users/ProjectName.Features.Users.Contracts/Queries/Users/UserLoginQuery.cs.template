@@ -1,0 +1,12 @@
+using {{ProjectName}}.Features.Users.Contracts.Models;
+
+using Prodot.Patterns.Cqrs;
+
+namespace {{ProjectName}}.Features.Users.Contracts.Queries.Users;
+
+public class UserLoginQuery : IQuery<User.UserIdentifier, UserLoginQuery>
+{
+    public string Username { get; set; } = string.Empty;
+
+    public string Password { get; set; } = string.Empty;
+}

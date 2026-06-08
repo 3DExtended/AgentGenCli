@@ -12,6 +12,7 @@ internal static class InitCommands
 
         initCommand.Options.Add(CliOptions.List);
         initCommand.Subcommands.Add(CreateProjectCommand());
+        initCommand.Subcommands.Add(CreateEmailCommand());
         initCommand.Subcommands.Add(CreateAuthCommand());
 
         initCommand.SetAction(parseResult =>
@@ -106,14 +107,63 @@ internal static class InitCommands
         return projectCommand;
     }
 
+    private static Command CreateEmailCommand()
+    {
+        var projectOption = new Option<string?>("--project")
+        {
+            Description = "Project name (defaults to .agentGenCli.json / solution name)",
+        };
+        var yesOption = new Option<bool>("--yes")
+        {
+            Description = "Skip confirmation prompt",
+        };
+
+        var emailCommand = new Command("email", "Initialize SendGrid email scaffolding")
+        {
+            projectOption,
+            yesOption,
+        };
+
+        emailCommand.SetAction(parseResult =>
+        {
+            return EmailScaffolder.Scaffold(
+                new EmailScaffoldRequest
+                {
+                    ProjectFlag = parseResult.GetValue(projectOption),
+                    Yes = parseResult.GetValue(yesOption),
+                }
+            );
+        });
+
+        return emailCommand;
+    }
+
     private static Command CreateAuthCommand()
     {
-        var authCommand = new Command("auth", "Initialize authentication scaffolding");
-
-        authCommand.SetAction(_ =>
+        var projectOption = new Option<string?>("--project")
         {
-            Console.WriteLine("Initializing auth scaffolding");
-            return 0;
+            Description = "Project name (defaults to .agentGenCli.json / solution name)",
+        };
+        var yesOption = new Option<bool>("--yes")
+        {
+            Description = "Skip confirmation prompt",
+        };
+
+        var authCommand = new Command("auth", "Initialize authentication scaffolding")
+        {
+            projectOption,
+            yesOption,
+        };
+
+        authCommand.SetAction(parseResult =>
+        {
+            return AuthScaffolder.Scaffold(
+                new AuthScaffoldRequest
+                {
+                    ProjectFlag = parseResult.GetValue(projectOption),
+                    Yes = parseResult.GetValue(yesOption),
+                }
+            );
         });
 
         return authCommand;

@@ -13,7 +13,23 @@ agentGenCli init project <name> [backend] [frontend]
 | `backend` | `dotnet` (others not yet implemented) | `dotnet` |
 | `frontend` | `flutter`, `none` | `flutter` |
 
-`init auth` — listed but not implemented yet.
+### `init email` — requires dotnet backend
+
+```bash
+agentGenCli init email [--project NAME] [--yes]
+```
+
+Scaffolds SendGrid email support (`common/{{ProjectName}}.Common.SendGrid/`), patches DI, and adds `SendGrid` appsettings placeholders.
+
+### `init auth` — requires dotnet backend; auto-runs `init email` if needed
+
+```bash
+agentGenCli init auth [--project NAME] [--yes]
+```
+
+Scaffolds Users feature, JWT + IUserContext, register/sign-in controllers, encrypted email storage, and Flutter auth screens (when a Flutter app exists). Runs `project sync-openapi` when Flutter is present.
+
+Configure after init: `Jwt`, `Encryption`, `SendGrid`, Google/Apple client IDs.
 
 ## New features
 
