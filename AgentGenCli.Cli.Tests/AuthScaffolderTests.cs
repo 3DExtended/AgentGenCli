@@ -264,4 +264,57 @@ public class AuthScaffolderArtifactTests
             )
         );
     }
+
+    [Fact]
+    public void AuthEntityTemplates_IncludeKeyAttributesAndForeignKeyRelationship()
+    {
+        var authRoot = TemplateEngine.GetAuthTemplateRoot();
+        var userEntity = File.ReadAllText(
+            Path.Combine(
+                authRoot,
+                "Backend",
+                "features",
+                "users",
+                "ProjectName.Features.Users",
+                "Entities",
+                "UserEntity.cs.template"
+            )
+        );
+        var userCredentialsEntity = File.ReadAllText(
+            Path.Combine(
+                authRoot,
+                "Backend",
+                "features",
+                "users",
+                "ProjectName.Features.Users",
+                "Entities",
+                "UserCredentialsEntity.cs.template"
+            )
+        );
+        var userCredentialsConfiguration = File.ReadAllText(
+            Path.Combine(
+                authRoot,
+                "Backend",
+                "features",
+                "users",
+                "ProjectName.Features.Users",
+                "Configurations",
+                "UserCredentialsEntityConfiguration.cs.template"
+            )
+        );
+
+        Assert.Contains("[Key]", userEntity, StringComparison.Ordinal);
+        Assert.Contains("UserCredentialsEntity? UserCredentials", userEntity, StringComparison.Ordinal);
+
+        Assert.Contains("[Key]", userCredentialsEntity, StringComparison.Ordinal);
+        Assert.Contains("[ForeignKey(nameof(User))]", userCredentialsEntity, StringComparison.Ordinal);
+        Assert.Contains("UserEntity User", userCredentialsEntity, StringComparison.Ordinal);
+
+        Assert.Contains("HasOne(entity => entity.User)", userCredentialsConfiguration, StringComparison.Ordinal);
+        Assert.Contains(
+            "HasForeignKey<UserCredentialsEntity>(entity => entity.UserId)",
+            userCredentialsConfiguration,
+            StringComparison.Ordinal
+        );
+    }
 }
