@@ -11,14 +11,17 @@ features/{feature}/                   # one folder per backend feature
   {{ProjectName}}.Features.{Feature}.Contracts/
   {{ProjectName}}.Features.{Feature}/
 tests/{{ProjectName}}.Features.{Feature}.Tests/
-extern/Prodot.Patterns.Cqrs/          # CQRS patterns (git submodule)
+common/{{ProjectName}}.Cqrs/          # vendored CQRS core (queries, handlers, Option)
+common/{{ProjectName}}.Cqrs.EfCore/   # EF Core base query handlers (Mapster)
 tests/{{ProjectName}}.Common.Tests/
 tests/{{ProjectName}}.Api.Tests/
 ```
 
 ## CQRS pattern
 
-Queries and handlers live in feature projects. The API layer maps HTTP to queries via generated or hand-written controllers. Shared infrastructure is in `{{ProjectName}}.Common` and `extern/Prodot.Patterns.Cqrs`.
+Queries and handlers live in feature projects. The API layer maps HTTP to queries via generated or hand-written controllers. Shared CQRS infrastructure is vendored in `common/{{ProjectName}}.Cqrs` and `common/{{ProjectName}}.Cqrs.EfCore`; database and DI wiring live in `{{ProjectName}}.Common`.
+
+For database-backed CRUD features, subclass the EfCore base handlers (`CreateQueryHandlerBase`, `SingleModelQueryHandlerBase`, etc.) and register Mapster maps via `{Feature}MapsterConfig` (`IRegister`).
 
 ## Adding a feature
 

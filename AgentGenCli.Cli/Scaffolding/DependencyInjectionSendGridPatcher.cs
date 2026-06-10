@@ -56,9 +56,10 @@ internal static class DependencyInjectionSendGridPatcher
             content = content.Replace("    private static void AddCqrs(", method + "    private static void AddCqrs(", StringComparison.Ordinal);
         }
 
-        const string cqrsAnchor = "options.WithQueryHandlersFrom(typeof(CommonPipelineProfile).Assembly);";
+        const string cqrsAnchor =
+            "options.WithQueryHandlersFrom(typeof(SystemHealthCheckQueryHandler).Assembly);";
         const string cqrsInsert =
-            "options.WithQueryHandlersFrom(typeof(CommonPipelineProfile).Assembly);\r\n            options.WithQueryHandlersFrom(typeof(EmailSendQueryHandler).Assembly);";
+            "options.WithQueryHandlersFrom(typeof(SystemHealthCheckQueryHandler).Assembly);\r\n            options.WithQueryHandlersFrom(typeof(EmailSendQueryHandler).Assembly);";
         if (content.Contains(cqrsAnchor, StringComparison.Ordinal)
             && !content.Contains("EmailSendQueryHandler", StringComparison.Ordinal))
         {

@@ -4,9 +4,6 @@ using System.Text.Json;
 
 internal static class ProjectScaffolder
 {
-    private const string CqrsSubmoduleUrl =
-        "https://github.com/3DExtended/Prodot.Patterns.Cqrs.git";
-
     public static int ScaffoldProject(string projectName, string frontend)
     {
         var backendResult = ScaffoldDotnetBackend(projectName, frontend);
@@ -98,18 +95,6 @@ internal static class ProjectScaffolder
         if (ProcessRunner.Run("dotnet", $"new sln --name {projectName}") != 0)
         {
             Console.Error.WriteLine("Error creating .NET solution.");
-            return 1;
-        }
-
-        Console.WriteLine("Adding submodule for Prodot.Patterns.Cqrs...");
-        if (
-            ProcessRunner.Run(
-                "git",
-                $"submodule add {CqrsSubmoduleUrl} extern/Prodot.Patterns.Cqrs"
-            ) != 0
-        )
-        {
-            Console.Error.WriteLine("Error adding git submodule.");
             return 1;
         }
 
@@ -291,6 +276,16 @@ internal static class ProjectScaffolder
             Path.Combine(root, "tests", $"{tokens.ProjectName}.Api.Tests"),
             tokens
         );
+        CopyTemplateDirectory(
+            "common/ProjectName.Cqrs",
+            Path.Combine(root, "common", $"{tokens.ProjectName}.Cqrs"),
+            tokens
+        );
+        CopyTemplateDirectory(
+            "common/ProjectName.Cqrs.EfCore",
+            Path.Combine(root, "common", $"{tokens.ProjectName}.Cqrs.EfCore"),
+            tokens
+        );
 
         RemoveIfExists(Path.Combine(root, "common", $"{tokens.ProjectName}.Common", "Class1.cs"));
         RemoveIfExists(Path.Combine(root, "tests", $"{tokens.ProjectName}.Common.Tests", "UnitTest1.cs"));
@@ -369,6 +364,8 @@ internal static class ProjectScaffolder
         var projects = new[]
         {
             $"applications/{projectName}.Api/{projectName}.Api.csproj",
+            $"common/{projectName}.Cqrs/{projectName}.Cqrs.csproj",
+            $"common/{projectName}.Cqrs.EfCore/{projectName}.Cqrs.EfCore.csproj",
             $"common/{projectName}.Common/{projectName}.Common.csproj",
             $"tests/{projectName}.Common.Tests/{projectName}.Common.Tests.csproj",
             $"tests/{projectName}.Api.Tests/{projectName}.Api.Tests.csproj",
@@ -390,11 +387,10 @@ internal static class ProjectScaffolder
     {
         var apiProject = $"applications/{projectName}.Api/{projectName}.Api.csproj";
         var commonProject = $"common/{projectName}.Common/{projectName}.Common.csproj";
-        var cqrsDiProject =
-            "extern/Prodot.Patterns.Cqrs/Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection/Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection.csproj";
+        var cqrsProject = $"common/{projectName}.Cqrs/{projectName}.Cqrs.csproj";
 
         return RunDotnetAddReference(apiProject, commonProject)
-            && RunDotnetAddReference(apiProject, cqrsDiProject);
+            && RunDotnetAddReference(apiProject, cqrsProject);
     }
 
     private static bool RunDotnetAddReference(string project, string reference)
@@ -412,6 +408,7 @@ internal static class ProjectScaffolder
     private static bool AddNuGetPackages(string projectName)
     {
         var apiProject = $"applications/{projectName}.Api/{projectName}.Api.csproj";
+        var commonProject = $"common/{projectName}.Common/{projectName}.Common.csproj";
         return ProcessRunner.Run(
                 "dotnet",
                 $"add \"{apiProject}\" package Microsoft.EntityFrameworkCore.Design --version 10.0.5"
@@ -420,6 +417,11 @@ internal static class ProjectScaffolder
             && ProcessRunner.Run(
                 "dotnet",
                 $"add \"{apiProject}\" package Swashbuckle.AspNetCore --version 9.0.6"
+            )
+            == 0
+            && ProcessRunner.Run(
+                "dotnet",
+                $"add \"{commonProject}\" package Mapster.DependencyInjection --version 1.0.1"
             )
             == 0;
     }

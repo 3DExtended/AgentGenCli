@@ -1,39 +1,29 @@
 using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Cqrs.EfCore;
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 using {{ProjectName}}.Features.{{FeatureName}}.Entities;
 
-using Microsoft.EntityFrameworkCore;
+using MapsterMapper;
 
-using Prodot.Patterns.Cqrs;
+using Microsoft.EntityFrameworkCore;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 
-public class Create{{FeatureName}}QueryHandler : IQueryHandler<Create{{FeatureName}}Query, {{FeatureName}}Dto>
+public class Create{{FeatureName}}QueryHandler
+    : CreateQueryHandlerBase<
+        Create{{FeatureName}}Query,
+        {{FeatureName}}Dto,
+        {{FeatureName}}Id,
+        Guid,
+        {{ProjectName}}DbContext,
+        Entities.{{FeatureName}}
+    >
 {
-    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
-
-    public Create{{FeatureName}}QueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
-    {
-        _contextFactory = contextFactory;
-    }
-
-    public IQueryHandler<Create{{FeatureName}}Query, {{FeatureName}}Dto> Successor { get; set; } = default!;
-
-    public async Task<Option<{{FeatureName}}Dto>> RunQueryAsync(
-        Create{{FeatureName}}Query query,
-        CancellationToken cancellationToken
+    public Create{{FeatureName}}QueryHandler(
+        IMapper mapper,
+        IDbContextFactory<{{ProjectName}}DbContext> contextFactory
     )
+        : base(mapper, contextFactory)
     {
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        var entity = new Entities.{{FeatureName}} { Id = Guid.NewGuid(), Name = query.Name };
-        context.Set<Entities.{{FeatureName}}>().Add(entity);
-        await context.SaveChangesAsync(cancellationToken);
-
-        return new {{FeatureName}}Dto
-        {
-            Id = entity.Id,
-            Name = entity.Name,
-            Message = "Created",
-        };
     }
 }

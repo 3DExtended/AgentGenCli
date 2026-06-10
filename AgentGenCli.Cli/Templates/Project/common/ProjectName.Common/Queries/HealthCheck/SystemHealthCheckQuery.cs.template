@@ -1,6 +1,6 @@
 using {{ProjectName}}.Common.Models.HealthCheck;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Common.Queries.HealthCheck;
 

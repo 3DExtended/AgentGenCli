@@ -4,13 +4,13 @@ using System.Reflection;
 using {{ProjectName}}.Common;
 using {{ProjectName}}.Features.{{FeatureName}};
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
 public class QueryHandlerCoverageTestData : IEnumerable<object[]>
 {
-    private static readonly Assembly ProductionAssembly = typeof({{FeatureName}}PipelineProfile).Assembly;
+    private static readonly Assembly ProductionAssembly = typeof({{FeatureName}}MapsterConfig).Assembly;
 
     public IEnumerator<object[]> GetEnumerator()
     {

@@ -5,13 +5,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Mapster" Version="7.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ProjectName.Features.FeatureName.Contracts\ProjectName.Features.FeatureName.Contracts.csproj" />
     <ProjectReference Include="..\..\..\common\ProjectName.Common\ProjectName.Common.csproj" />
-    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.csproj" />
-    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.Abstractions\Prodot.Patterns.Cqrs.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.EfCore\Prodot.Patterns.Cqrs.EfCore.csproj" />
-    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.EfCore.Abstractions\Prodot.Patterns.Cqrs.EfCore.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection\Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection.csproj" />
+    <ProjectReference Include="..\..\..\common\ProjectName.Cqrs\ProjectName.Cqrs.csproj" />
+    <ProjectReference Include="..\..\..\common\ProjectName.Cqrs.EfCore\ProjectName.Cqrs.EfCore.csproj" />
   </ItemGroup>
 
 </Project>

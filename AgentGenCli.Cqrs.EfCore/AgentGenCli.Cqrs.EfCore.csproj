@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>AgentGenCli.Cqrs.EfCore</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="AgentGenCli.Cqrs" />
+    <Using Include="AgentGenCli.Cqrs.EfCore" />
+    <Using Include="Microsoft.EntityFrameworkCore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Mapster" Version="7.4.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AgentGenCli.Cqrs\AgentGenCli.Cqrs.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -5,8 +5,8 @@ using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using Prodot.Patterns.Cqrs;
-using Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection;
+using {{ProjectName}}.Cqrs;
+using {{ProjectName}}.Cqrs.DependencyInjection;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
@@ -17,14 +17,8 @@ public class Handle{{FeatureName}}QueryHandlerTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddProdotPatternsCqrs(options =>
-            options
-                .WithQueryHandlersFrom(typeof({{FeatureName}}PipelineProfile).Assembly)
-                .WithQueryHandlerPipelineConfiguration(config =>
-                    config
-                        .WithPipelineAutoRegistration()
-                        .AddProfiles(typeof({{FeatureName}}PipelineProfile).Assembly)
-                )
+        services.AddCqrs(options =>
+            options.WithQueryHandlersFrom(typeof(Handle{{FeatureName}}QueryHandler).Assembly)
         );
 
         await using var serviceProvider = services.BuildServiceProvider();

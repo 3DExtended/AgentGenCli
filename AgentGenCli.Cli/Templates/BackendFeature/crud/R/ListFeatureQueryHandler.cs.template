@@ -1,41 +1,29 @@
 using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Cqrs.EfCore;
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 using {{ProjectName}}.Features.{{FeatureName}}.Entities;
 
-using Microsoft.EntityFrameworkCore;
+using MapsterMapper;
 
-using Prodot.Patterns.Cqrs;
+using Microsoft.EntityFrameworkCore;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 
-public class List{{FeatureName}}QueryHandler : IQueryHandler<List{{FeatureName}}Query, IReadOnlyList<{{FeatureName}}Dto>>
+public class List{{FeatureName}}QueryHandler
+    : ListOfModelQueryHandlerBase<
+        List{{FeatureName}}Query,
+        {{FeatureName}}Dto,
+        {{FeatureName}}Id,
+        Guid,
+        {{ProjectName}}DbContext,
+        Entities.{{FeatureName}}
+    >
 {
-    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
-
-    public List{{FeatureName}}QueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
-    {
-        _contextFactory = contextFactory;
-    }
-
-    public IQueryHandler<List{{FeatureName}}Query, IReadOnlyList<{{FeatureName}}Dto>> Successor { get; set; } =
-        default!;
-
-    public async Task<Option<IReadOnlyList<{{FeatureName}}Dto>>> RunQueryAsync(
-        List{{FeatureName}}Query query,
-        CancellationToken cancellationToken
+    public List{{FeatureName}}QueryHandler(
+        IMapper mapper,
+        IDbContextFactory<{{ProjectName}}DbContext> contextFactory
     )
+        : base(mapper, contextFactory)
     {
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        var entities = await context.Set<Entities.{{FeatureName}}>().AsNoTracking().ToListAsync(cancellationToken);
-        IReadOnlyList<{{FeatureName}}Dto> results = entities
-            .Select(entity => new {{FeatureName}}Dto
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Message = "Listed",
-            })
-            .ToList();
-
-        return Option.From(results);
     }
 }

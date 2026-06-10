@@ -20,7 +20,7 @@ internal static class ApiFeatureRegistrationPatcher
             );
         }
 
-        var assemblyLine = $"        typeof({feature.PascalName}PipelineProfile).Assembly,";
+        var assemblyLine = $"        typeof({feature.PascalName}MapsterConfig).Assembly,";
         if (content.Contains(assemblyLine, StringComparison.Ordinal))
         {
             return;

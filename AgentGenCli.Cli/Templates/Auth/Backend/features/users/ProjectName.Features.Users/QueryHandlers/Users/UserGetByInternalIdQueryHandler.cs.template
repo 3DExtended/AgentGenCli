@@ -5,7 +5,7 @@ using {{ProjectName}}.Features.Users.Entities;
 
 using Microsoft.EntityFrameworkCore;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
@@ -18,7 +18,6 @@ public class UserGetByInternalIdQueryHandler : IQueryHandler<UserGetByInternalId
         _contextFactory = contextFactory;
     }
 
-    public IQueryHandler<UserGetByInternalIdQuery, User.UserIdentifier> Successor { get; set; } = default!;
 
     public async Task<Option<User.UserIdentifier>> RunQueryAsync(
         UserGetByInternalIdQuery query,

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Common.QueryHandlers.HealthCheck;
 
@@ -26,7 +26,6 @@ public class SystemHealthCheckQueryHandler : IQueryHandler<SystemHealthCheckQuer
         _logger = logger;
     }
 
-    public IQueryHandler<SystemHealthCheckQuery, HealthCheckReport> Successor { get; set; } = default!;
 
     public async Task<Option<HealthCheckReport>> RunQueryAsync(
         SystemHealthCheckQuery query,

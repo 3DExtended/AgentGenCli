@@ -10,8 +10,8 @@ using Microsoft.Extensions.Logging;
 
 using NSubstitute;
 
-using Prodot.Patterns.Cqrs;
-using Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection;
+using {{ProjectName}}.Cqrs;
+using {{ProjectName}}.Cqrs.DependencyInjection;
 
 namespace {{ProjectName}}.Common.Tests.QueryHandlers.HealthCheck;
 
@@ -27,12 +27,8 @@ public class SystemHealthCheckQueryHandlerTests
             options.UseSqlite($"Data Source={databaseName};Mode=Memory;Cache=Shared")
         );
         services.AddLogging();
-        services.AddProdotPatternsCqrs(options =>
-            options
-                .WithQueryHandlersFrom(typeof(CommonPipelineProfile).Assembly)
-                .WithQueryHandlerPipelineConfiguration(config =>
-                    config.WithPipelineAutoRegistration().AddProfiles(typeof(CommonPipelineProfile).Assembly)
-                )
+        services.AddCqrs(options =>
+            options.WithQueryHandlersFrom(typeof(SystemHealthCheckQueryHandler).Assembly)
         );
 
         await using var serviceProvider = services.BuildServiceProvider();
@@ -89,12 +85,8 @@ public class SystemHealthCheckQueryHandlerTests
     {
         var services = new ServiceCollection();
         services.AddLogging();
-        services.AddProdotPatternsCqrs(options =>
-            options
-                .WithQueryHandlersFrom(typeof(CommonPipelineProfile).Assembly)
-                .WithQueryHandlerPipelineConfiguration(config =>
-                    config.WithPipelineAutoRegistration().AddProfiles(typeof(CommonPipelineProfile).Assembly)
-                )
+        services.AddCqrs(options =>
+            options.WithQueryHandlersFrom(typeof(SystemHealthCheckQueryHandler).Assembly)
         );
 
         await using var serviceProvider = services.BuildServiceProvider();

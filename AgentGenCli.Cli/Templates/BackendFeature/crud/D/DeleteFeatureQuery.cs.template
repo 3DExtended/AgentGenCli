@@ -1,8 +1,7 @@
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs.EfCore;
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
-public class Delete{{FeatureName}}Query : IQuery<bool, Delete{{FeatureName}}Query>
-{
-    public Guid Id { get; set; }
-}
+public class Delete{{FeatureName}}Query
+    : DeleteCommand<{{FeatureName}}Dto, {{FeatureName}}Id, Guid, Delete{{FeatureName}}Query>;

@@ -4,12 +4,15 @@ using {{ProjectName}}.Features.{{FeatureName}};
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 
+using Mapster;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Prodot.Patterns.Cqrs;
-using Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection;
+using {{ProjectName}}.Cqrs;
+using MapsterMapper;
+using {{ProjectName}}.Cqrs.DependencyInjection;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
@@ -23,18 +26,16 @@ public class Get{{FeatureName}}QueryHandlerTests
 
         var services = new ServiceCollection();
         services.AddSingleton<IFeatureAssemblyProvider>(
-            new FeatureAssemblyProvider([typeof({{FeatureName}}PipelineProfile).Assembly])
+            new FeatureAssemblyProvider([typeof({{FeatureName}}MapsterConfig).Assembly])
         );
         services.AddDbContextFactory<{{ProjectName}}DbContext>(options => options.UseSqlite(connection));
         services.AddLogging();
-        services.AddProdotPatternsCqrs(options =>
-            options
-                .WithQueryHandlersFrom(typeof({{FeatureName}}PipelineProfile).Assembly)
-                .WithQueryHandlerPipelineConfiguration(config =>
-                    config
-                        .WithPipelineAutoRegistration()
-                        .AddProfiles(typeof({{FeatureName}}PipelineProfile).Assembly)
-                )
+        var mapsterConfig = new TypeAdapterConfig();
+        new {{FeatureName}}MapsterConfig().Register(mapsterConfig);
+        services.AddSingleton(mapsterConfig);
+        services.AddSingleton<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
+        services.AddCqrs(options =>
+            options.WithQueryHandlersFrom(typeof(Get{{FeatureName}}QueryHandler).Assembly)
         );
 
         await using var serviceProvider = services.BuildServiceProvider();
@@ -50,7 +51,7 @@ public class Get{{FeatureName}}QueryHandlerTests
 
         var handler = scope.ServiceProvider.GetRequiredService<Get{{FeatureName}}QueryHandler>();
         var result = await handler.RunQueryAsync(
-            new Get{{FeatureName}}Query { Id = Guid.NewGuid() },
+            new Get{{FeatureName}}Query { ModelId = {{FeatureName}}Id.From(Guid.NewGuid()) },
             CancellationToken.None
         );
 

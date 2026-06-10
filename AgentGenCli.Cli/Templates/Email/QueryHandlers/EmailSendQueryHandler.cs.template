@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 using SendGrid;
 using SendGrid.Helpers.Mail;
@@ -20,7 +20,6 @@ public class EmailSendQueryHandler : IQueryHandler<EmailSendQuery, Unit>
         _logger = logger;
     }
 
-    public IQueryHandler<EmailSendQuery, Unit> Successor { get; set; } = null!;
 
     public async Task<Option<Unit>> RunQueryAsync(EmailSendQuery query, CancellationToken cancellationToken)
     {

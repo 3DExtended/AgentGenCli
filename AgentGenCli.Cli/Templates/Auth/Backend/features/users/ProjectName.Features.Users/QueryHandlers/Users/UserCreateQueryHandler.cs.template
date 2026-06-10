@@ -6,7 +6,7 @@ using {{ProjectName}}.Features.Users.Entities;
 
 using Microsoft.EntityFrameworkCore;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
@@ -27,7 +27,6 @@ public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, User.UserId
         _systemClock = systemClock;
     }
 
-    public IQueryHandler<UserCreateQuery, User.UserIdentifier> Successor { get; set; } = default!;
 
     public async Task<Option<User.UserIdentifier>> RunQueryAsync(
         UserCreateQuery query,

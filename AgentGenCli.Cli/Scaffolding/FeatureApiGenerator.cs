@@ -35,7 +35,13 @@ internal static class FeatureApiGenerator
                     )
                     {
                         var result = await _queryProcessor.RunQueryAsync(query, cancellationToken);
-                        return ToActionResult(result);
+                        if (result.IsNone)
+                        {
+                            return NotFound();
+                        }
+
+                        var id = result.Get();
+                        return CreatedAtAction(nameof(Get), new { id = id.Value }, id);
                     }
                 """
             );
@@ -49,7 +55,7 @@ internal static class FeatureApiGenerator
                     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
                     {
                         var result = await _queryProcessor.RunQueryAsync(
-                            new Get{{name}}Query { Id = id },
+                            new Get{{name}}Query { ModelId = {{name}}Id.From(id) },
                             cancellationToken
                         );
                         return ToActionResult(result);
@@ -76,9 +82,14 @@ internal static class FeatureApiGenerator
                         CancellationToken cancellationToken
                     )
                     {
-                        query.Id = id;
+                        query.UpdatedModel.Id = {{name}}Id.From(id);
                         var result = await _queryProcessor.RunQueryAsync(query, cancellationToken);
-                        return ToActionResult(result);
+                        if (result.IsNone)
+                        {
+                            return NotFound();
+                        }
+
+                        return NoContent();
                     }
                 """
             );
@@ -92,7 +103,7 @@ internal static class FeatureApiGenerator
                     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
                     {
                         var result = await _queryProcessor.RunQueryAsync(
-                            new Delete{{name}}Query { Id = id },
+                            new Delete{{name}}Query { Id = {{name}}Id.From(id) },
                             cancellationToken
                         );
 
@@ -112,7 +123,7 @@ internal static class FeatureApiGenerator
 
             using Microsoft.AspNetCore.Mvc;
 
-            using Prodot.Patterns.Cqrs;
+            using {{project}}.Cqrs;
 
             namespace {{project}}.Api.Controllers;
 

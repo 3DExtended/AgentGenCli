@@ -12,7 +12,8 @@ This repo may include a **.NET backend**, a **Flutter frontend**, both, or evolv
 ├── applications/           # runnable apps (API and/or Flutter)
 ├── common/                 # shared .NET library (when backend=dotnet)
 ├── features/               # backend feature modules (when backend=dotnet)
-├── extern/                 # git submodules (CQRS patterns, when backend=dotnet)
+├── common/{Name}.Cqrs/     # vendored CQRS (when backend=dotnet)
+├── common/{Name}.Cqrs.EfCore/
 ├── tests/                  # .NET test projects (when backend=dotnet)
 ├── docker-compose.yml      # local stack (when backend=dotnet)
 └── {{ProjectName}}.sln     # .NET solution (when backend=dotnet)

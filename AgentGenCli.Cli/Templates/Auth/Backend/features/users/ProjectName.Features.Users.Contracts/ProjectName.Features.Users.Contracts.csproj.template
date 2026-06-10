@@ -5,8 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.csproj" />
-    <ProjectReference Include="..\..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.Abstractions\Prodot.Patterns.Cqrs.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\common\ProjectName.Cqrs\ProjectName.Cqrs.csproj" />
   </ItemGroup>
 
 </Project>

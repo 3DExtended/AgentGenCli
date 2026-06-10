@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Mapster.DependencyInjection" Version="1.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
       <PrivateAssets>all</PrivateAssets>
@@ -16,11 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.csproj" />
-    <ProjectReference Include="..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.Abstractions\Prodot.Patterns.Cqrs.Abstractions.csproj" />
-    <ProjectReference Include="..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.EfCore\Prodot.Patterns.Cqrs.EfCore.csproj" />
-    <ProjectReference Include="..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.EfCore.Abstractions\Prodot.Patterns.Cqrs.EfCore.Abstractions.csproj" />
-    <ProjectReference Include="..\..\extern\Prodot.Patterns.Cqrs\Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection\Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection.csproj" />
+    <ProjectReference Include="..\ProjectName.Cqrs\ProjectName.Cqrs.csproj" />
+    <ProjectReference Include="..\ProjectName.Cqrs.EfCore\ProjectName.Cqrs.EfCore.csproj" />
   </ItemGroup>
 
 </Project>

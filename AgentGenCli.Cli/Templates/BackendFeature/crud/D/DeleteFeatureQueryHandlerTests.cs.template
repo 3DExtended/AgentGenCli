@@ -1,6 +1,5 @@
 using {{ProjectName}}.Common;
 using {{ProjectName}}.Common.Data;
-using {{ProjectName}}.Features.{{FeatureName}};
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 
@@ -8,8 +7,7 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Prodot.Patterns.Cqrs;
-using Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection;
+using {{ProjectName}}.Cqrs.DependencyInjection;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
@@ -23,18 +21,12 @@ public class Delete{{FeatureName}}QueryHandlerTests
 
         var services = new ServiceCollection();
         services.AddSingleton<IFeatureAssemblyProvider>(
-            new FeatureAssemblyProvider([typeof({{FeatureName}}PipelineProfile).Assembly])
+            new FeatureAssemblyProvider([typeof(Delete{{FeatureName}}QueryHandler).Assembly])
         );
         services.AddDbContextFactory<{{ProjectName}}DbContext>(options => options.UseSqlite(connection));
         services.AddLogging();
-        services.AddProdotPatternsCqrs(options =>
-            options
-                .WithQueryHandlersFrom(typeof({{FeatureName}}PipelineProfile).Assembly)
-                .WithQueryHandlerPipelineConfiguration(config =>
-                    config
-                        .WithPipelineAutoRegistration()
-                        .AddProfiles(typeof({{FeatureName}}PipelineProfile).Assembly)
-                )
+        services.AddCqrs(options =>
+            options.WithQueryHandlersFrom(typeof(Delete{{FeatureName}}QueryHandler).Assembly)
         );
 
         await using var serviceProvider = services.BuildServiceProvider();
@@ -50,7 +42,7 @@ public class Delete{{FeatureName}}QueryHandlerTests
 
         var handler = scope.ServiceProvider.GetRequiredService<Delete{{FeatureName}}QueryHandler>();
         var result = await handler.RunQueryAsync(
-            new Delete{{FeatureName}}Query { Id = Guid.NewGuid() },
+            new Delete{{FeatureName}}Query { Id = {{FeatureName}}Id.From(Guid.NewGuid()) },
             CancellationToken.None
         );
 

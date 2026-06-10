@@ -1,6 +1,6 @@
 using {{ProjectName}}.Features.Users.Contracts.Models;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 

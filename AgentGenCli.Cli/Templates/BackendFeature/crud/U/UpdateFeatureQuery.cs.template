@@ -1,10 +1,7 @@
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs.EfCore;
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
-public class Update{{FeatureName}}Query : IQuery<{{FeatureName}}Dto, Update{{FeatureName}}Query>
-{
-    public Guid Id { get; set; }
-
-    public string Name { get; set; } = string.Empty;
-}
+public class Update{{FeatureName}}Query
+    : UpdateCommand<{{FeatureName}}Dto, {{FeatureName}}Id, Guid, Update{{FeatureName}}Query>;

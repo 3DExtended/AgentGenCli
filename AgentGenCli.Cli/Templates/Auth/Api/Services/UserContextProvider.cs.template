@@ -4,7 +4,7 @@ using {{ProjectName}}.Common.Auth;
 using AuthUser = {{ProjectName}}.Features.Users.Contracts.Models.User;
 using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Api.Services;
 

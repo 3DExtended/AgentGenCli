@@ -6,7 +6,7 @@ using {{ProjectName}}.Features.Users.Entities;
 
 using Microsoft.EntityFrameworkCore;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
@@ -24,7 +24,6 @@ public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, User.UserIden
         _passwordHasherService = passwordHasherService;
     }
 
-    public IQueryHandler<UserLoginQuery, User.UserIdentifier> Successor { get; set; } = default!;
 
     public async Task<Option<User.UserIdentifier>> RunQueryAsync(
         UserLoginQuery query,

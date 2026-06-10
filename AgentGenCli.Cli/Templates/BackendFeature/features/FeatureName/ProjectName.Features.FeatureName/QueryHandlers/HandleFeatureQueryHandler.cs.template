@@ -1,6 +1,6 @@
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 
@@ -9,7 +9,6 @@ namespace {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 /// </summary>
 public class Handle{{FeatureName}}QueryHandler : IQueryHandler<Handle{{FeatureName}}Query, {{FeatureName}}Dto>
 {
-    public IQueryHandler<Handle{{FeatureName}}Query, {{FeatureName}}Dto> Successor { get; set; } = default!;
 
     public Task<Option<{{FeatureName}}Dto>> RunQueryAsync(
         Handle{{FeatureName}}Query query,

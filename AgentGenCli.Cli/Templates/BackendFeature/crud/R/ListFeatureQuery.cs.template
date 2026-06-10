@@ -1,7 +1,7 @@
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs.EfCore;
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
-public class List{{FeatureName}}Query : IQuery<IReadOnlyList<{{FeatureName}}Dto>, List{{FeatureName}}Query>
-{
-}
+public class List{{FeatureName}}Query
+    : ListOfModelQuery<{{FeatureName}}Dto, {{FeatureName}}Id, Guid, List{{FeatureName}}Query>;

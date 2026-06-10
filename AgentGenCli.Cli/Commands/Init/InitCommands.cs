@@ -38,21 +38,30 @@ internal static class InitCommands
 
         var backendArgument = new Argument<string>("backend")
         {
-            Description = "Backend template",
+            Description = "Backend template: dotnet (default)",
             DefaultValueFactory = _ => "dotnet",
         };
 
         var frontendArgument = new Argument<string>("frontend")
         {
-            Description = "Frontend template",
+            Description = "Frontend template: flutter (default) or none for backend-only",
             DefaultValueFactory = _ => "flutter",
         };
 
-        var projectCommand = new Command("project", "Initialize a new full-stack project")
+        var hereOption = new Option<bool>("--here")
+        {
+            Description = "Initialize in the current directory even when it is not empty",
+        };
+
+        var projectCommand = new Command(
+            "project",
+            "Initialize a new project (pass frontend 'none' for backend-only)"
+        )
         {
             nameArgument,
             backendArgument,
             frontendArgument,
+            hereOption,
         };
 
         projectCommand.SetAction(parseResult =>
@@ -60,6 +69,7 @@ internal static class InitCommands
             var name = parseResult.GetValue(nameArgument);
             var backend = parseResult.GetValue(backendArgument)!;
             var frontend = parseResult.GetValue(frontendArgument)!;
+            var initializeHere = parseResult.GetValue(hereOption);
 
             if (name == null)
             {
@@ -71,10 +81,26 @@ internal static class InitCommands
                 $"Initializing project '{name}' with backend={backend}, frontend={frontend}"
             );
 
-            var projectDir = Path.Combine(Directory.GetCurrentDirectory(), name);
+            var currentDirectory = Directory.GetCurrentDirectory();
+            var currentDirectoryIsEmpty =
+                Directory.GetFileSystemEntries(currentDirectory).Length == 0;
 
-            if (Directory.GetFileSystemEntries(Directory.GetCurrentDirectory()).Length > 0)
+            if (initializeHere || currentDirectoryIsEmpty)
             {
+                if (currentDirectoryIsEmpty)
+                {
+                    Console.WriteLine("Current directory is empty, initializing project here.");
+                }
+                else
+                {
+                    Console.WriteLine(
+                        "Initializing project in the current directory (--here)."
+                    );
+                }
+            }
+            else
+            {
+                var projectDir = Path.Combine(currentDirectory, name);
                 if (!Directory.Exists(projectDir))
                 {
                     Directory.CreateDirectory(projectDir);
@@ -82,10 +108,6 @@ internal static class InitCommands
                 }
 
                 Directory.SetCurrentDirectory(projectDir);
-            }
-            else
-            {
-                Console.WriteLine("Current directory is empty, initializing project here.");
             }
 
             Console.WriteLine("Creating project directories...");

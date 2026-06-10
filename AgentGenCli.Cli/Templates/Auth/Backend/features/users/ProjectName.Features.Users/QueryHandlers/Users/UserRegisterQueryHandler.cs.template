@@ -2,7 +2,7 @@ using {{ProjectName}}.Common.Services;
 using {{ProjectName}}.Features.Users.Contracts.Models;
 using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
@@ -23,7 +23,6 @@ public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.Us
         _passwordHasherService = passwordHasherService;
     }
 
-    public IQueryHandler<UserRegisterQuery, User.UserIdentifier> Successor { get; set; } = default!;
 
     public async Task<Option<User.UserIdentifier>> RunQueryAsync(
         UserRegisterQuery query,

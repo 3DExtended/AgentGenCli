@@ -1,9 +1,9 @@
+using {{ProjectName}}.Cqrs.EfCore;
+
 namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
-public class {{FeatureName}}Dto
+public class {{FeatureName}}Dto : ModelBase<{{FeatureName}}Id, Guid>
 {
-    public Guid? Id { get; set; }
-
     public string Name { get; set; } = string.Empty;
 
     public string Message { get; set; } = "Replace this query with your {{FeatureName}} logic.";

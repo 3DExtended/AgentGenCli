@@ -1,8 +1,7 @@
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs.EfCore;
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 
-public class Get{{FeatureName}}Query : IQuery<{{FeatureName}}Dto, Get{{FeatureName}}Query>
-{
-    public Guid Id { get; set; }
-}
+public class Get{{FeatureName}}Query
+    : SingleModelQuery<{{FeatureName}}Dto, {{FeatureName}}Id, Guid, Get{{FeatureName}}Query>;

@@ -3,7 +3,7 @@ using {{ProjectName}}.Common.Queries.HealthCheck;
 
 using Microsoft.AspNetCore.Mvc;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Api.Controllers;
 

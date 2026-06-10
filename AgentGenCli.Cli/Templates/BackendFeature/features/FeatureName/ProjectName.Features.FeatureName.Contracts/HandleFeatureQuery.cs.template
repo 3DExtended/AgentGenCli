@@ -1,4 +1,4 @@
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 

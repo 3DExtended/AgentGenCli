@@ -5,7 +5,7 @@ using {{ProjectName}}.Features.Users.Entities;
 
 using Microsoft.EntityFrameworkCore;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
@@ -23,7 +23,6 @@ public class UserExistsByEmailQueryHandler : IQueryHandler<UserExistsByEmailQuer
         _emailProtectionService = emailProtectionService;
     }
 
-    public IQueryHandler<UserExistsByEmailQuery, bool> Successor { get; set; } = default!;
 
     public async Task<Option<bool>> RunQueryAsync(
         UserExistsByEmailQuery query,

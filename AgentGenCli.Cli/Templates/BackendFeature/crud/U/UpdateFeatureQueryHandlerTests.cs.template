@@ -4,12 +4,15 @@ using {{ProjectName}}.Features.{{FeatureName}};
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 
+using Mapster;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
-using Prodot.Patterns.Cqrs;
-using Prodot.Patterns.Cqrs.MicrosoftExtensionsDependencyInjection;
+using {{ProjectName}}.Cqrs;
+using MapsterMapper;
+using {{ProjectName}}.Cqrs.DependencyInjection;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
@@ -23,18 +26,16 @@ public class Update{{FeatureName}}QueryHandlerTests
 
         var services = new ServiceCollection();
         services.AddSingleton<IFeatureAssemblyProvider>(
-            new FeatureAssemblyProvider([typeof({{FeatureName}}PipelineProfile).Assembly])
+            new FeatureAssemblyProvider([typeof({{FeatureName}}MapsterConfig).Assembly])
         );
         services.AddDbContextFactory<{{ProjectName}}DbContext>(options => options.UseSqlite(connection));
         services.AddLogging();
-        services.AddProdotPatternsCqrs(options =>
-            options
-                .WithQueryHandlersFrom(typeof({{FeatureName}}PipelineProfile).Assembly)
-                .WithQueryHandlerPipelineConfiguration(config =>
-                    config
-                        .WithPipelineAutoRegistration()
-                        .AddProfiles(typeof({{FeatureName}}PipelineProfile).Assembly)
-                )
+        var mapsterConfig = new TypeAdapterConfig();
+        new {{FeatureName}}MapsterConfig().Register(mapsterConfig);
+        services.AddSingleton(mapsterConfig);
+        services.AddSingleton<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
+        services.AddCqrs(options =>
+            options.WithQueryHandlersFrom(typeof(Update{{FeatureName}}QueryHandler).Assembly)
         );
 
         await using var serviceProvider = services.BuildServiceProvider();
@@ -50,7 +51,14 @@ public class Update{{FeatureName}}QueryHandlerTests
 
         var handler = scope.ServiceProvider.GetRequiredService<Update{{FeatureName}}QueryHandler>();
         var result = await handler.RunQueryAsync(
-            new Update{{FeatureName}}Query { Id = Guid.NewGuid(), Name = "Updated" },
+            new Update{{FeatureName}}Query
+            {
+                UpdatedModel = new {{FeatureName}}Dto
+                {
+                    Id = {{FeatureName}}Id.From(Guid.NewGuid()),
+                    Name = "updated",
+                },
+            },
             CancellationToken.None
         );
 

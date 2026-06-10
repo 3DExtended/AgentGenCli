@@ -2,7 +2,7 @@ using {{ProjectName}}.Api;
 
 using Microsoft.OpenApi.Models;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 using Swashbuckle.AspNetCore.SwaggerGen;
 

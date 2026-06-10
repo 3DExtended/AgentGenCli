@@ -2,14 +2,15 @@ using System.Collections;
 using System.Reflection;
 
 using {{ProjectName}}.Common;
+using {{ProjectName}}.Common.QueryHandlers.HealthCheck;
 
-using Prodot.Patterns.Cqrs;
+using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Common.Tests.QueryHandlers;
 
 public class QueryHandlerCoverageTestData : IEnumerable<object[]>
 {
-    private static readonly Assembly ProductionAssembly = typeof(CommonPipelineProfile).Assembly;
+    private static readonly Assembly ProductionAssembly = typeof(SystemHealthCheckQueryHandler).Assembly;
 
     public IEnumerator<object[]> GetEnumerator()
     {

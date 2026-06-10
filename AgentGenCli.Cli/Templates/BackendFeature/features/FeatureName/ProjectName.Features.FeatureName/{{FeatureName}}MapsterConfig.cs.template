@@ -1,0 +1,20 @@
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+using {{ProjectName}}.Features.{{FeatureName}}.Entities;
+
+using Mapster;
+
+namespace {{ProjectName}}.Features.{{FeatureName}};
+
+public class {{FeatureName}}MapsterConfig : IRegister
+{
+    public void Register(TypeAdapterConfig config)
+    {
+        config.NewConfig<Entities.{{FeatureName}}, {{FeatureName}}Dto>()
+            .Map(dest => dest.Id, src => {{FeatureName}}Id.From(src.Id))
+            .Map(dest => dest.Name, src => src.Name);
+
+        config.NewConfig<{{FeatureName}}Dto, Entities.{{FeatureName}}>()
+            .Map(dest => dest.Id, src => src.Id.Value == Guid.Empty ? Guid.NewGuid() : src.Id.Value)
+            .Map(dest => dest.Name, src => src.Name);
+    }
+}
