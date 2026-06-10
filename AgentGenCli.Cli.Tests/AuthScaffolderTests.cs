@@ -245,6 +245,31 @@ public class AuthScaffolderArtifactTests
                     "Api",
                     "tests",
                     "ProjectName.Api.Tests",
+                    "Base",
+                    "ControllerTestBase.cs.template"
+                )
+            )
+        );
+        Assert.True(
+            File.Exists(
+                Path.Combine(
+                    authRoot,
+                    "Api",
+                    "tests",
+                    "ProjectName.Api.Tests",
+                    "Controllers",
+                    "Authorization",
+                    "SignInControllerTests.cs.template"
+                )
+            )
+        );
+        Assert.True(
+            File.Exists(
+                Path.Combine(
+                    authRoot,
+                    "Api",
+                    "tests",
+                    "ProjectName.Api.Tests",
                     "Controllers",
                     "Authorization",
                     "RegisterControllerTests.cs.template"
