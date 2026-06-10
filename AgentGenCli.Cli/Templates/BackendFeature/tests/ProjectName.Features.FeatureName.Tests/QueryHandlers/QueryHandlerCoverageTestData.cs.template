@@ -2,7 +2,7 @@ using System.Collections;
 using System.Reflection;
 
 using {{ProjectName}}.Common;
-using {{ProjectName}}.Features.{{FeatureName}};
+using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
 
 using {{ProjectName}}.Cqrs;
 
@@ -10,7 +10,7 @@ namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
 public class QueryHandlerCoverageTestData : IEnumerable<object[]>
 {
-    private static readonly Assembly ProductionAssembly = typeof({{FeatureName}}MapsterConfig).Assembly;
+    private static readonly Assembly ProductionAssembly = typeof(Handle{{FeatureName}}QueryHandler).Assembly;
 
     public IEnumerator<object[]> GetEnumerator()
     {

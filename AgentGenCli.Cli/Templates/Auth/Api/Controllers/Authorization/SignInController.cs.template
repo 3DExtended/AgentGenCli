@@ -52,12 +52,13 @@ public class SignInController : ControllerBase
             return BadRequest();
         }
 
-        var result = await new UserLoginQuery
-        {
-            Username = loginDto.Username,
-            Password = loginDto.Password,
-        }
-            .RunAsync(_queryProcessor, cancellationToken)
+        var result = await _queryProcessor.RunQueryAsync(
+                new UserLoginQuery
+                {
+                    Username = loginDto.Username,
+                    Password = loginDto.Password,
+                },
+                cancellationToken)
             .ConfigureAwait(false);
 
         if (result.IsNone)
@@ -159,12 +160,13 @@ public class SignInController : ControllerBase
             return BadRequest();
         }
 
-        var result = await new UserRequestPasswordResetQuery
-        {
-            Email = requestDto.Email,
-            Username = requestDto.Username,
-        }
-            .RunAsync(_queryProcessor, cancellationToken)
+        var result = await _queryProcessor.RunQueryAsync(
+                new UserRequestPasswordResetQuery
+                {
+                    Email = requestDto.Email,
+                    Username = requestDto.Username,
+                },
+                cancellationToken)
             .ConfigureAwait(false);
 
         return result.IsSome ? Ok("Email sent") : BadRequest("Could not create password reset mail or token!");
@@ -187,14 +189,15 @@ public class SignInController : ControllerBase
             return BadRequest();
         }
 
-        var result = await new UserPasswordResetQuery
-        {
-            Email = requestDto.Email,
-            Username = requestDto.Username,
-            ResetCode = requestDto.ResetCode,
-            NewPassword = requestDto.NewPassword,
-        }
-            .RunAsync(_queryProcessor, cancellationToken)
+        var result = await _queryProcessor.RunQueryAsync(
+                new UserPasswordResetQuery
+                {
+                    Email = requestDto.Email,
+                    Username = requestDto.Username,
+                    ResetCode = requestDto.ResetCode,
+                    NewPassword = requestDto.NewPassword,
+                },
+                cancellationToken)
             .ConfigureAwait(false);
 
         return result.IsSome ? Ok("New password set") : BadRequest("Could not set new password!");
@@ -225,17 +228,19 @@ public class SignInController : ControllerBase
         CancellationToken cancellationToken
     )
     {
-        var possiblyExistingUserId = await new UserGetByInternalIdQuery { InternalId = internalId }
-            .RunAsync(_queryProcessor, cancellationToken)
+        var possiblyExistingUserId = await _queryProcessor.RunQueryAsync(
+                new UserGetByInternalIdQuery { InternalId = internalId },
+                cancellationToken)
             .ConfigureAwait(false);
 
         if (possiblyExistingUserId.IsSome)
         {
-            var user = await new UserGetByIdQuery
-            {
-                UserId = AuthUser.UserIdentifier.From(possiblyExistingUserId.Get().Value),
-            }
-                .RunAsync(_queryProcessor, cancellationToken)
+            var user = await _queryProcessor.RunQueryAsync(
+                    new UserGetByIdQuery
+                    {
+                        UserId = AuthUser.UserIdentifier.From(possiblyExistingUserId.Get().Value),
+                    },
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             if (user.IsNone)

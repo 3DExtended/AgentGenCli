@@ -50,11 +50,12 @@ public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, User.UserId
         if (query.UserCredentials != null)
         {
             query.UserCredentials.UserId = User.UserIdentifier.From(userId);
-            var credentialsResult = await new UserCredentialsCreateQuery
-            {
-                ModelToCreate = query.UserCredentials,
-            }
-                .RunAsync(_queryProcessor, cancellationToken)
+            var credentialsResult = await _queryProcessor.RunQueryAsync(
+                    new UserCredentialsCreateQuery
+                    {
+                        ModelToCreate = query.UserCredentials,
+                    },
+                    cancellationToken)
                 .ConfigureAwait(false);
 
             if (credentialsResult.IsNone)

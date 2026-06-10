@@ -25,11 +25,13 @@ public class UserContextProvider : IUserContext
             ?? throw new InvalidOperationException("identityproviderid claim is missing from JWT.");
 
         var userId = Guid.Parse(identityProviderId);
-        var loadedUser = new UserGetByIdQuery
-        {
-            UserId = AuthUser.UserIdentifier.From(userId),
-        }
-            .RunAsync(queryProcessor, CancellationToken.None)
+        var loadedUser = queryProcessor
+            .RunQueryAsync(
+                new UserGetByIdQuery
+                {
+                    UserId = AuthUser.UserIdentifier.From(userId),
+                },
+                CancellationToken.None)
             .GetAwaiter()
             .GetResult();
 

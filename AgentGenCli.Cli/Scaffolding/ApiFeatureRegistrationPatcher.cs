@@ -8,19 +8,8 @@ internal static class ApiFeatureRegistrationPatcher
     {
         var path = context.FeatureRegistrationPath;
         var content = File.ReadAllText(path);
-        var featureNamespace = $"{context.ProjectName}.Features.{feature.PascalName}";
-        var usingLine = $"using {featureNamespace};";
-
-        if (!content.Contains(usingLine, StringComparison.Ordinal))
-        {
-            content = content.Replace(
-                "using System.Reflection;",
-                $"using System.Reflection;\r\n\r\n{usingLine}",
-                StringComparison.Ordinal
-            );
-        }
-
-        var assemblyLine = $"        typeof({feature.PascalName}MapsterConfig).Assembly,";
+        var anchorType = ResolveAssemblyAnchorType(context, feature);
+        var assemblyLine = $"        typeof(global::{anchorType}).Assembly,";
         if (content.Contains(assemblyLine, StringComparison.Ordinal))
         {
             return;
@@ -36,6 +25,27 @@ internal static class ApiFeatureRegistrationPatcher
 
         content = content.Insert(markerIndex, $"{assemblyLine}\r\n");
         WriteUtf8WithBom(path, content);
+    }
+
+    private static string ResolveAssemblyAnchorType(ProjectContext context, FeatureNameInfo feature)
+    {
+        var featureNamespace = $"{context.ProjectName}.Features.{feature.PascalName}";
+        var mapsterConfigPath = Path.Combine(
+            context.FeatureProjectDir(feature),
+            $"{feature.PascalName}MapsterConfig.cs"
+        );
+
+        if (File.Exists(mapsterConfigPath))
+        {
+            return $"{featureNamespace}.{feature.PascalName}MapsterConfig";
+        }
+
+        if (string.Equals(feature.FolderName, "users", StringComparison.OrdinalIgnoreCase))
+        {
+            return $"{featureNamespace}.QueryHandlers.Users.UserRegisterQueryHandler";
+        }
+
+        return $"{featureNamespace}.QueryHandlers.Handle{feature.PascalName}QueryHandler";
     }
 
     private static void WriteUtf8WithBom(string path, string content)

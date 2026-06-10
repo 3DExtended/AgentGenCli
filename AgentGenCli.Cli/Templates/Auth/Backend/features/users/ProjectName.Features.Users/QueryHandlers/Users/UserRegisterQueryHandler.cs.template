@@ -29,8 +29,9 @@ public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.Us
         CancellationToken cancellationToken
     )
     {
-        var usernameExists = await new UserExistsByUsernameQuery { Username = query.Username }
-            .RunAsync(_queryProcessor, cancellationToken)
+        var usernameExists = await _queryProcessor.RunQueryAsync(
+                new UserExistsByUsernameQuery { Username = query.Username },
+                cancellationToken)
             .ConfigureAwait(false);
 
         if (usernameExists.IsNone || usernameExists.Get())
@@ -38,8 +39,9 @@ public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.Us
             return Option<User.UserIdentifier>.None;
         }
 
-        var emailExists = await new UserExistsByEmailQuery { Email = query.Email }
-            .RunAsync(_queryProcessor, cancellationToken)
+        var emailExists = await _queryProcessor.RunQueryAsync(
+                new UserExistsByEmailQuery { Email = query.Email },
+                cancellationToken)
             .ConfigureAwait(false);
 
         if (emailExists.IsNone || emailExists.Get())
@@ -47,19 +49,20 @@ public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.Us
             return Option<User.UserIdentifier>.None;
         }
 
-        return await new UserCreateQuery
-        {
-            ModelToCreate = new User { Username = query.Username },
-            UserCredentials = new UserCredentials
-            {
-                Username = query.Username,
-                PasswordHash = _passwordHasherService.HashPassword(query.Password),
-                SignInProvider = false,
-                EmailCiphertext = _emailProtectionService.EncryptEmail(query.Email),
-                EmailLookupHash = _emailProtectionService.ComputeLookupHash(query.Email),
-            },
-        }
-            .RunAsync(_queryProcessor, cancellationToken)
+        return await _queryProcessor.RunQueryAsync(
+                new UserCreateQuery
+                {
+                    ModelToCreate = new User { Username = query.Username },
+                    UserCredentials = new UserCredentials
+                    {
+                        Username = query.Username,
+                        PasswordHash = _passwordHasherService.HashPassword(query.Password),
+                        SignInProvider = false,
+                        EmailCiphertext = _emailProtectionService.EncryptEmail(query.Email),
+                        EmailLookupHash = _emailProtectionService.ComputeLookupHash(query.Email),
+                    },
+                },
+                cancellationToken)
             .ConfigureAwait(false);
     }
 }
