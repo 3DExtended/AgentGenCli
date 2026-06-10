@@ -455,6 +455,7 @@ internal static class ProjectScaffolder
         var apiDir = Path.Combine(root, "applications", $"{projectName}.Api");
         var weatherForecast = Path.Combine(apiDir, "WeatherForecast.cs");
         RemoveIfExists(weatherForecast);
+        RemoveIfExists(Path.Combine(apiDir, $"{projectName}.Api.http"));
 
         foreach (var file in Directory.EnumerateFiles(Path.Combine(apiDir, "Controllers"), "*.cs"))
         {
