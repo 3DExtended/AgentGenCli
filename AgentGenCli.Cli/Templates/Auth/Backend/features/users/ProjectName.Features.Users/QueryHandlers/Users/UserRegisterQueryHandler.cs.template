@@ -6,7 +6,7 @@ using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
-public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.UserIdentifier>
+public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, UserId>
 {
     private readonly IQueryProcessor _queryProcessor;
     private readonly IEmailProtectionService _emailProtectionService;
@@ -24,7 +24,7 @@ public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.Us
     }
 
 
-    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+    public async Task<Option<UserId>> RunQueryAsync(
         UserRegisterQuery query,
         CancellationToken cancellationToken
     )
@@ -36,7 +36,7 @@ public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.Us
 
         if (usernameExists.IsNone || usernameExists.Get())
         {
-            return Option<User.UserIdentifier>.None;
+            return Option<UserId>.None;
         }
 
         var emailExists = await _queryProcessor.RunQueryAsync(
@@ -46,7 +46,7 @@ public class UserRegisterQueryHandler : IQueryHandler<UserRegisterQuery, User.Us
 
         if (emailExists.IsNone || emailExists.Get())
         {
-            return Option<User.UserIdentifier>.None;
+            return Option<UserId>.None;
         }
 
         return await _queryProcessor.RunQueryAsync(

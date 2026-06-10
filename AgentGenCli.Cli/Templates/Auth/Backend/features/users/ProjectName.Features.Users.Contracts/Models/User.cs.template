@@ -1,15 +1,8 @@
+using {{ProjectName}}.Cqrs.EfCore;
+
 namespace {{ProjectName}}.Features.Users.Contracts.Models;
 
-public class User
+public class User : ModelBase<UserId, Guid>
 {
-    public UserIdentifier Id { get; set; } = default!;
-
     public string Username { get; set; } = string.Empty;
-
-    public sealed record UserIdentifier(Guid Value)
-    {
-        public static UserIdentifier From(Guid value) => new(value);
-
-        public Guid ToGuid() => Value;
-    }
 }

@@ -10,7 +10,7 @@ using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
-public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, User.UserIdentifier>
+public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, UserId>
 {
     private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
     private readonly IQueryProcessor _queryProcessor;
@@ -28,7 +28,7 @@ public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, User.UserId
     }
 
 
-    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+    public async Task<Option<UserId>> RunQueryAsync(
         UserCreateQuery query,
         CancellationToken cancellationToken
     )
@@ -49,7 +49,7 @@ public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, User.UserId
 
         if (query.UserCredentials != null)
         {
-            query.UserCredentials.UserId = User.UserIdentifier.From(userId);
+            query.UserCredentials.Id = UserCredentialsId.From(userId);
             var credentialsResult = await _queryProcessor.RunQueryAsync(
                     new UserCredentialsCreateQuery
                     {
@@ -60,10 +60,10 @@ public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, User.UserId
 
             if (credentialsResult.IsNone)
             {
-                return Option<User.UserIdentifier>.None;
+                return Option<UserId>.None;
             }
         }
 
-        return User.UserIdentifier.From(userId);
+        return UserId.From(userId);
     }
 }

@@ -4,7 +4,7 @@ using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
-public class UserLoginQuery : IQuery<User.UserIdentifier, UserLoginQuery>
+public class UserLoginQuery : IQuery<UserId, UserLoginQuery>
 {
     public string Username { get; set; } = string.Empty;
 

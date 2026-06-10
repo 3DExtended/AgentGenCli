@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using {{ProjectName}}.Api.Models;
 using {{ProjectName}}.Common.Auth;
 using {{ProjectName}}.Common.Options;
-using AuthUser = {{ProjectName}}.Features.Users.Contracts.Models.User;
+using {{ProjectName}}.Features.Users.Contracts.Models;
 using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
 using Google.Apis.Auth;
@@ -238,7 +238,7 @@ public class SignInController : ControllerBase
             var user = await _queryProcessor.RunQueryAsync(
                     new UserGetByIdQuery
                     {
-                        UserId = AuthUser.UserIdentifier.From(possiblyExistingUserId.Get().Value),
+                        ModelId = UserId.From(possiblyExistingUserId.Get().Value),
                     },
                     cancellationToken)
                 .ConfigureAwait(false);

@@ -35,6 +35,11 @@ public static class DependencyInjectionHelpers
             ConfigureDatabase(services, configuration, env);
         }
 
+        if (assemblies.Count > 0)
+        {
+            TypeAdapterConfig.GlobalSettings.Scan(assemblies.ToArray());
+        }
+
         services.AddMapster();
         AddCqrs(services, assemblies);
 

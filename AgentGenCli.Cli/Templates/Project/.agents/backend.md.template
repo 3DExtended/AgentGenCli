@@ -21,7 +21,7 @@ tests/{{ProjectName}}.Api.Tests/
 
 Queries and handlers live in feature projects. The API layer maps HTTP to queries via generated or hand-written controllers. Shared CQRS infrastructure is vendored in `common/{{ProjectName}}.Cqrs` and `common/{{ProjectName}}.Cqrs.EfCore`; database and DI wiring live in `{{ProjectName}}.Common`.
 
-For database-backed CRUD features, subclass the EfCore base handlers (`CreateQueryHandlerBase`, `SingleModelQueryHandlerBase`, etc.) and register Mapster maps via `{Feature}MapsterConfig` (`IRegister`).
+Domain models in feature Contracts projects extend `ModelBase<{Name}Id, Guid>` with a matching `{Name}Id : Identifier<Guid, {Name}Id>` record. For database-backed CRUD features, subclass the EfCore base handlers (`CreateQueryHandlerBase`, `SingleModelQueryHandlerBase`, etc.) and register Mapster maps via `{Feature}MapsterConfig` (`IRegister`).
 
 ## Adding a feature
 

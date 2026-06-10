@@ -40,11 +40,6 @@ internal static class ApiFeatureRegistrationPatcher
             return $"{featureNamespace}.{feature.PascalName}MapsterConfig";
         }
 
-        if (string.Equals(feature.FolderName, "users", StringComparison.OrdinalIgnoreCase))
-        {
-            return $"{featureNamespace}.QueryHandlers.Users.UserRegisterQueryHandler";
-        }
-
         return $"{featureNamespace}.QueryHandlers.Handle{feature.PascalName}QueryHandler";
     }
 

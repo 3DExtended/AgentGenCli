@@ -6,12 +6,15 @@ using {{ProjectName}}.Features.Users;
 using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 using {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
+using Mapster;
+
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 using {{ProjectName}}.Cqrs;
 using {{ProjectName}}.Cqrs.DependencyInjection;
+using MapsterMapper;
 
 namespace {{ProjectName}}.Features.Users.Tests.QueryHandlers;
 
@@ -31,8 +34,12 @@ public class UserRegisterQueryHandlerTests
 
         var services = new ServiceCollection();
         services.AddSingleton<IFeatureAssemblyProvider>(
-            new FeatureAssemblyProvider([typeof(UserRegisterQueryHandler).Assembly])
+            new FeatureAssemblyProvider([typeof(UsersMapsterConfig).Assembly])
         );
+        var mapsterConfig = new TypeAdapterConfig();
+        new UsersMapsterConfig().Register(mapsterConfig);
+        services.AddSingleton(mapsterConfig);
+        services.AddSingleton<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
         services.AddSingleton(encryptionOptions);
         services.AddSingleton<IEmailProtectionService, EmailProtectionService>();
         services.AddSingleton<IPasswordHasherService, PasswordHasherService>();

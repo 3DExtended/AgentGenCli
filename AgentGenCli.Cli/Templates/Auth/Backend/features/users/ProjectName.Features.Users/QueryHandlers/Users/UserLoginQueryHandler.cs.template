@@ -10,7 +10,7 @@ using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
-public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, User.UserIdentifier>
+public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, UserId>
 {
     private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
     private readonly IPasswordHasherService _passwordHasherService;
@@ -25,7 +25,7 @@ public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, User.UserIden
     }
 
 
-    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+    public async Task<Option<UserId>> RunQueryAsync(
         UserLoginQuery query,
         CancellationToken cancellationToken
     )
@@ -41,7 +41,7 @@ public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, User.UserIden
 
         if (credentials == null || credentials.SignInProvider)
         {
-            return Option<User.UserIdentifier>.None;
+            return Option<UserId>.None;
         }
 
         if (
@@ -49,9 +49,9 @@ public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, User.UserIden
             || !_passwordHasherService.VerifyPassword(credentials.PasswordHash, query.Password)
         )
         {
-            return Option<User.UserIdentifier>.None;
+            return Option<UserId>.None;
         }
 
-        return User.UserIdentifier.From(credentials.UserId);
+        return UserId.From(credentials.UserId);
     }
 }

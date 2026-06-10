@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Mapster" Version="7.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ProjectName.Features.Users.Contracts\ProjectName.Features.Users.Contracts.csproj" />
     <ProjectReference Include="..\..\..\common\ProjectName.Common\ProjectName.Common.csproj" />
     <ProjectReference Include="..\..\..\common\ProjectName.Cqrs\ProjectName.Cqrs.csproj" />

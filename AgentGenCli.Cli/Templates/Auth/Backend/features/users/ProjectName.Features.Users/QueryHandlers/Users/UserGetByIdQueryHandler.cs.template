@@ -1,41 +1,30 @@
 using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Cqrs.EfCore;
 using {{ProjectName}}.Features.Users.Contracts.Models;
 using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 using {{ProjectName}}.Features.Users.Entities;
 
-using Microsoft.EntityFrameworkCore;
+using MapsterMapper;
 
-using {{ProjectName}}.Cqrs;
+using Microsoft.EntityFrameworkCore;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
-public class UserGetByIdQueryHandler : IQueryHandler<UserGetByIdQuery, User>
+public class UserGetByIdQueryHandler
+    : SingleModelQueryHandlerBase<
+        UserGetByIdQuery,
+        User,
+        UserId,
+        Guid,
+        {{ProjectName}}DbContext,
+        UserEntity
+    >
 {
-    private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
-
-    public UserGetByIdQueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)
+    public UserGetByIdQueryHandler(
+        IMapper mapper,
+        IDbContextFactory<{{ProjectName}}DbContext> contextFactory
+    )
+        : base(mapper, contextFactory)
     {
-        _contextFactory = contextFactory;
-    }
-
-
-    public async Task<Option<User>> RunQueryAsync(UserGetByIdQuery query, CancellationToken cancellationToken)
-    {
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
-        var entity = await context
-            .Set<UserEntity>()
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Id == query.UserId.ToGuid(), cancellationToken);
-
-        if (entity == null)
-        {
-            return Option<User>.None;
-        }
-
-        return new User
-        {
-            Id = User.UserIdentifier.From(entity.Id),
-            Username = entity.Username,
-        };
     }
 }

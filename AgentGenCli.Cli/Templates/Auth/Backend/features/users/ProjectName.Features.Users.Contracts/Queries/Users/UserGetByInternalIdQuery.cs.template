@@ -4,7 +4,7 @@ using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
-public class UserGetByInternalIdQuery : IQuery<User.UserIdentifier, UserGetByInternalIdQuery>
+public class UserGetByInternalIdQuery : IQuery<UserId, UserGetByInternalIdQuery>
 {
     public string InternalId { get; set; } = string.Empty;
 }

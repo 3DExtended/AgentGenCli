@@ -1,10 +1,6 @@
+using {{ProjectName}}.Cqrs.EfCore;
 using {{ProjectName}}.Features.Users.Contracts.Models;
-
-using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
-public class UserGetByIdQuery : IQuery<User, UserGetByIdQuery>
-{
-    public User.UserIdentifier UserId { get; set; } = default!;
-}
+public class UserGetByIdQuery : SingleModelQuery<User, UserId, Guid, UserGetByIdQuery>;

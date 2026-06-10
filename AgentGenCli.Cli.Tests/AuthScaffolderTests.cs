@@ -317,4 +317,47 @@ public class AuthScaffolderArtifactTests
             StringComparison.Ordinal
         );
     }
+
+    [Fact]
+    public void AuthModelTemplates_UseIdentifierPattern()
+    {
+        var authRoot = TemplateEngine.GetAuthTemplateRoot();
+        var contractsDir = Path.Combine(
+            authRoot,
+            "Backend",
+            "features",
+            "users",
+            "ProjectName.Features.Users.Contracts",
+            "Models"
+        );
+
+        var user = File.ReadAllText(Path.Combine(contractsDir, "User.cs.template"));
+        var userId = File.ReadAllText(Path.Combine(contractsDir, "UserId.cs.template"));
+        var userCredentials = File.ReadAllText(Path.Combine(contractsDir, "UserCredentials.cs.template"));
+        var userCredentialsId = File.ReadAllText(
+            Path.Combine(contractsDir, "UserCredentialsId.cs.template")
+        );
+        var usersMapsterConfig = File.ReadAllText(
+            Path.Combine(
+                authRoot,
+                "Backend",
+                "features",
+                "users",
+                "ProjectName.Features.Users",
+                "UsersMapsterConfig.cs.template"
+            )
+        );
+
+        Assert.Contains("ModelBase<UserId, Guid>", user, StringComparison.Ordinal);
+        Assert.Contains("record UserId : Identifier<Guid, UserId>", userId, StringComparison.Ordinal);
+        Assert.Contains("ModelBase<UserCredentialsId, Guid>", userCredentials, StringComparison.Ordinal);
+        Assert.Contains(
+            "record UserCredentialsId : Identifier<Guid, UserCredentialsId>",
+            userCredentialsId,
+            StringComparison.Ordinal
+        );
+        Assert.DoesNotContain("UserIdentifier", user, StringComparison.Ordinal);
+        Assert.Contains("UserId.From", usersMapsterConfig, StringComparison.Ordinal);
+        Assert.Contains("UserCredentialsId.From", usersMapsterConfig, StringComparison.Ordinal);
+    }
 }

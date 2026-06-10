@@ -4,7 +4,7 @@ using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
-public class UserCreateQuery : IQuery<User.UserIdentifier, UserCreateQuery>
+public class UserCreateQuery : IQuery<UserId, UserCreateQuery>
 {
     public required User ModelToCreate { get; set; }
 

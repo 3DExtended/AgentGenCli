@@ -9,7 +9,7 @@ using {{ProjectName}}.Cqrs;
 
 namespace {{ProjectName}}.Features.Users.QueryHandlers.Users;
 
-public class UserGetByInternalIdQueryHandler : IQueryHandler<UserGetByInternalIdQuery, User.UserIdentifier>
+public class UserGetByInternalIdQueryHandler : IQueryHandler<UserGetByInternalIdQuery, UserId>
 {
     private readonly IDbContextFactory<{{ProjectName}}DbContext> _contextFactory;
 
@@ -19,14 +19,14 @@ public class UserGetByInternalIdQueryHandler : IQueryHandler<UserGetByInternalId
     }
 
 
-    public async Task<Option<User.UserIdentifier>> RunQueryAsync(
+    public async Task<Option<UserId>> RunQueryAsync(
         UserGetByInternalIdQuery query,
         CancellationToken cancellationToken
     )
     {
         if (string.IsNullOrWhiteSpace(query.InternalId))
         {
-            return Option<User.UserIdentifier>.None;
+            return Option<UserId>.None;
         }
 
         await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
@@ -40,9 +40,9 @@ public class UserGetByInternalIdQueryHandler : IQueryHandler<UserGetByInternalId
 
         if (credentials == null)
         {
-            return Option<User.UserIdentifier>.None;
+            return Option<UserId>.None;
         }
 
-        return User.UserIdentifier.From(credentials.UserId);
+        return UserId.From(credentials.UserId);
     }
 }
