@@ -276,6 +276,11 @@ internal static class AuthScaffolder
             Path.Combine(context.Root, "tests", $"{context.ProjectName}.Api.Tests", "Controllers"),
             tokens
         );
+        CopyAuthTree(
+            "Api/tests/ProjectName.Api.Tests/Base",
+            Path.Combine(context.Root, "tests", $"{context.ProjectName}.Api.Tests", "Base"),
+            tokens
+        );
 
         RemoveIfExists(Path.Combine(context.FeatureContractsDir(feature), "Class1.cs"));
         RemoveIfExists(Path.Combine(context.FeatureProjectDir(feature), "Class1.cs"));
@@ -286,6 +291,7 @@ internal static class AuthScaffolder
     {
         CommonProjectAuthPatcher.Apply(context);
         ApiProjectAuthPatcher.Apply(context);
+        ApiTestsAuthPatcher.Apply(context);
         AppsettingsAuthPatcher.Apply(context);
         DependencyInjectionAuthPatcher.Apply(context);
         StartupAuthPatcher.Apply(context);
