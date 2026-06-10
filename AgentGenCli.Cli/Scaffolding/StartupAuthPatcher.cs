@@ -53,6 +53,7 @@ internal static class StartupAuthPatcher
                 services.AddSingleton(Configuration.GetSection("Google").Get<GoogleAuthOptions>() ?? new GoogleAuthOptions());
                 services.AddSingleton(Configuration.GetSection("Apple").Get<AppleAuthOptions>() ?? new AppleAuthOptions());
                 services.AddSingleton<IJWTTokenGenerator, JWTTokenGenerator>();
+                services.AddSingleton<IGoogleIdentityTokenValidator, GoogleIdentityTokenValidator>();
                 services.AddSingleton<IEmailProtectionService, EmailProtectionService>();
                 services.AddSingleton<IPasswordHasherService, PasswordHasherService>();
                 services.AddScoped<IUserContext, UserContextProvider>();

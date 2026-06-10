@@ -25,6 +25,7 @@ public class SignInController : ControllerBase
 {
     private readonly AppleAuthOptions _appleAuthOptions;
     private readonly IMemoryCache _cache;
+    private readonly IGoogleIdentityTokenValidator _googleTokenValidator;
     private readonly IQueryProcessor _queryProcessor;
     private readonly IJWTTokenGenerator _jwtTokenGenerator;
 
@@ -32,12 +33,14 @@ public class SignInController : ControllerBase
         IQueryProcessor queryProcessor,
         AppleAuthOptions appleAuthOptions,
         IMemoryCache cache,
+        IGoogleIdentityTokenValidator googleTokenValidator,
         IJWTTokenGenerator jwtTokenGenerator
     )
     {
         _queryProcessor = queryProcessor;
         _appleAuthOptions = appleAuthOptions;
         _cache = cache;
+        _googleTokenValidator = googleTokenValidator;
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
@@ -86,7 +89,9 @@ public class SignInController : ControllerBase
 
         try
         {
-            await GoogleJsonWebSignature.ValidateAsync(loginDto.IdentityToken);
+            await _googleTokenValidator
+                .ValidateAsync(loginDto.IdentityToken, cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (InvalidJwtException)
         {
@@ -201,6 +206,13 @@ public class SignInController : ControllerBase
             .ConfigureAwait(false);
 
         return result.IsSome ? Ok("New password set") : BadRequest("Could not set new password!");
+    }
+
+    [HttpGet("testlogin")]
+    [Authorize]
+    public ActionResult<string> TestLogin()
+    {
+        return Ok("ok");
     }
 
     private static Dictionary<string, string> GetTokenInfo(string token)
