@@ -62,6 +62,11 @@ internal static class AgentDocsGenerator
         builder.AppendLine($"- Backend: {backend ?? "unknown"}");
         builder.AppendLine($"- Frontend: {frontend ?? "unknown"}");
         builder.AppendLine();
+        builder.AppendLine("## Init modules");
+        builder.AppendLine();
+        builder.AppendLine($"- Email (SendGrid): {FormatBool(manifest.EmailInitialized)}");
+        builder.AppendLine($"- Auth (Users + JWT): {FormatBool(manifest.AuthInitialized)}");
+        builder.AppendLine();
         builder.AppendLine("## Enabled stacks");
         builder.AppendLine();
 

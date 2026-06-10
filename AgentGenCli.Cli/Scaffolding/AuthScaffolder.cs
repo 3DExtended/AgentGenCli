@@ -29,71 +29,68 @@ internal static class AuthScaffolder
             }
 
             var feature = FeatureNameNormalizer.Normalize("users");
-            if (Directory.Exists(context.FeatureRoot(feature)))
+            var usersFeatureExists = Directory.Exists(context.FeatureRoot(feature));
+
+            if (usersFeatureExists)
             {
-                Console.Error.WriteLine($"Users feature already exists at '{context.FeatureRoot(feature)}'.");
+                Console.WriteLine("Users feature already present; resuming auth initialization...");
+            }
+            else
+            {
+                Console.WriteLine("Auth scaffold summary:");
+                Console.WriteLine($"  Project: {context.ProjectName}");
+                Console.WriteLine("  Backend: Users feature + JWT + IUserContext");
+                Console.WriteLine("  Flutter: auth screens (when Flutter app exists)");
+
+                if (!request.Yes && !Confirm())
+                {
+                    Console.WriteLine("Aborted.");
+                    return 1;
+                }
+
+                var tokens = new TemplateTokens
+                {
+                    ProjectName = context.ProjectName,
+                    FeatureName = "Users",
+                    FeatureNameLower = "users",
+                };
+
+                if (!CreateUsersProjects(context, feature))
+                {
+                    return 1;
+                }
+
+                ApplyAuthTemplates(context, feature, tokens);
+                ApplyProjectPatchers(context);
+                ApiFeatureRegistrationPatcher.RegisterFeature(context, feature);
+
+                if (!AddUsersProjectReferences(context, feature))
+                {
+                    return 1;
+                }
+
+                if (!FormatGeneratedCode(context))
+                {
+                    return 1;
+                }
+            }
+
+            if (!VerifyBackendAuth(context))
+            {
                 return 1;
             }
 
-            Console.WriteLine("Auth scaffold summary:");
-            Console.WriteLine($"  Project: {context.ProjectName}");
-            Console.WriteLine("  Backend: Users feature + JWT + IUserContext");
-            Console.WriteLine("  Flutter: auth screens (when Flutter app exists)");
-
-            if (!request.Yes && !Confirm())
-            {
-                Console.WriteLine("Aborted.");
-                return 1;
-            }
-
-            var tokens = new TemplateTokens { ProjectName = context.ProjectName, FeatureName = "Users", FeatureNameLower = "users" };
-
-            if (!CreateUsersProjects(context, feature))
-            {
-                return 1;
-            }
-
-            ApplyAuthTemplates(context, feature, tokens);
-            ApplyProjectPatchers(context);
-            ApiFeatureRegistrationPatcher.RegisterFeature(context, feature);
-
-            if (!AddUsersProjectReferences(context, feature))
-            {
-                return 1;
-            }
-
-            if (!FormatGeneratedCode(context))
-            {
-                return 1;
-            }
-
-            Console.WriteLine("Building solution before AddUsers migration...");
-            if (ProcessRunner.Run("dotnet", "build") != 0)
-            {
-                Console.Error.WriteLine("Error building solution before AddUsers migration.");
-                return 1;
-            }
-
-            if (EfMigrationHelper.AddMigration(context, "AddUsers") != 0)
-            {
-                Console.Error.WriteLine("Error creating EF Core migration for Users.");
-                return 1;
-            }
-
-            if (ProcessRunner.Run("dotnet", "build") != 0)
-            {
-                Console.Error.WriteLine("Error building solution after auth scaffold.");
-                return 1;
-            }
-
-            if (ProcessRunner.Run("dotnet", "test") != 0)
-            {
-                Console.Error.WriteLine("Error running tests after auth scaffold.");
-                return 1;
-            }
+            FinalizeAuthManifest(context);
 
             if (Directory.Exists(context.FlutterAppDir))
             {
+                var tokens = new TemplateTokens
+                {
+                    ProjectName = context.ProjectName,
+                    FeatureName = "Users",
+                    FeatureNameLower = "users",
+                };
+
                 Console.WriteLine("Applying Flutter auth templates...");
                 if (FlutterAuthScaffolder.Apply(context, tokens) != 0)
                 {
@@ -126,22 +123,14 @@ internal static class AuthScaffolder
                     Console.Error.WriteLine("Error running Flutter tests.");
                     return 1;
                 }
-            }
 
-            ProjectManifest.MarkAuthInitialized(
-                context.Root,
-                new ManifestCommandEntry { Command = "init auth" }
-            );
-
-            if (Directory.Exists(context.FlutterAppDir))
-            {
                 ProjectManifest.RecordCommand(
                     context.Root,
                     new ManifestCommandEntry { Command = "project sync-openapi" }
                 );
+                AgentDocsGenerator.RefreshState(context.Root);
             }
 
-            AgentDocsGenerator.RefreshState(context.Root);
             Console.WriteLine("Auth scaffolding initialized successfully.");
             return 0;
         }
@@ -150,6 +139,45 @@ internal static class AuthScaffolder
             Console.Error.WriteLine(ex.Message);
             return 1;
         }
+    }
+
+    private static void FinalizeAuthManifest(ProjectContext context)
+    {
+        ProjectManifest.MarkAuthInitialized(
+            context.Root,
+            new ManifestCommandEntry { Command = "init auth" }
+        );
+        AgentDocsGenerator.RefreshState(context.Root);
+    }
+
+    private static bool VerifyBackendAuth(ProjectContext context)
+    {
+        Console.WriteLine("Building solution before AddUsers migration...");
+        if (ProcessRunner.Run("dotnet", "build") != 0)
+        {
+            Console.Error.WriteLine("Error building solution before AddUsers migration.");
+            return false;
+        }
+
+        if (EfMigrationHelper.AddMigrationIfMissing(context, "AddUsers") != 0)
+        {
+            Console.Error.WriteLine("Error creating EF Core migration for Users.");
+            return false;
+        }
+
+        if (ProcessRunner.Run("dotnet", "build") != 0)
+        {
+            Console.Error.WriteLine("Error building solution after auth scaffold.");
+            return false;
+        }
+
+        if (ProcessRunner.Run("dotnet", "test") != 0)
+        {
+            Console.Error.WriteLine("Error running tests after auth scaffold.");
+            return false;
+        }
+
+        return true;
     }
 
     private static bool Confirm()
@@ -312,23 +340,16 @@ internal static class CommonProjectAuthPatcher
 {
     public static void Apply(ProjectContext context)
     {
-        var path = context.CommonProjectPath;
-        var content = File.ReadAllText(path);
-        if (content.Contains("Microsoft.Extensions.Identity.Core", StringComparison.Ordinal))
-        {
-            return;
-        }
-
-        const string anchor = "  <ItemGroup>";
-        var packages =
-            """
-              <ItemGroup>
-                <PackageReference Include="Microsoft.Extensions.Identity.Core" Version="10.0.0" />
-                <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.9.0" />
-            """;
-
-        content = content.Replace(anchor, packages, StringComparison.Ordinal);
-        File.WriteAllText(path, content);
+        CsprojPackageHelper.AddPackageIfMissing(
+            context.CommonProjectPath,
+            "Microsoft.Extensions.Identity.Core",
+            "10.0.0"
+        );
+        CsprojPackageHelper.AddPackageIfMissing(
+            context.CommonProjectPath,
+            "System.IdentityModel.Tokens.Jwt",
+            "8.9.0"
+        );
     }
 }
 
@@ -337,21 +358,9 @@ internal static class ApiProjectAuthPatcher
     public static void Apply(ProjectContext context)
     {
         var path = context.ApiProjectPath;
-        var content = File.ReadAllText(path);
-        var changed = false;
 
-        if (!content.Contains("Google.Apis.Auth", StringComparison.Ordinal))
-        {
-            const string anchor = "  <ItemGroup>";
-            var packages =
-                """
-                  <ItemGroup>
-                    <PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
-                    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.5" />
-                """;
-            content = content.Replace(anchor, packages, StringComparison.Ordinal);
-            changed = true;
-        }
+        CsprojPackageHelper.AddPackageIfMissing(path, "Google.Apis.Auth", "1.69.0");
+        CsprojPackageHelper.AddPackageIfMissing(path, "Microsoft.AspNetCore.Authentication.JwtBearer", "10.0.5");
 
         var sendGridProject = Path.Combine(
             context.Root,
@@ -359,21 +368,28 @@ internal static class ApiProjectAuthPatcher
             $"{context.ProjectName}.Common.SendGrid",
             $"{context.ProjectName}.Common.SendGrid.csproj"
         );
-        if (File.Exists(sendGridProject) && !content.Contains("Common.SendGrid", StringComparison.Ordinal))
+        if (File.Exists(sendGridProject))
         {
-            var relative = Path.GetRelativePath(Path.GetDirectoryName(path)!, sendGridProject);
-            content = content.Replace(
-                "</Project>",
-                $"  <ItemGroup>\r\n    <ProjectReference Include=\"{relative}\" />\r\n  </ItemGroup>\r\n</Project>",
-                StringComparison.Ordinal
-            );
-            changed = true;
+            var content = File.ReadAllText(path);
+            if (!content.Contains("Common.SendGrid", StringComparison.Ordinal))
+            {
+                ProcessRunner.Run("dotnet", $"add \"{path}\" reference \"{sendGridProject}\"");
+            }
+        }
+    }
+}
+
+internal static class CsprojPackageHelper
+{
+    public static void AddPackageIfMissing(string projectPath, string packageId, string version)
+    {
+        var content = File.ReadAllText(projectPath);
+        if (content.Contains(packageId, StringComparison.Ordinal))
+        {
+            return;
         }
 
-        if (changed)
-        {
-            File.WriteAllText(path, content);
-        }
+        ProcessRunner.Run("dotnet", $"add \"{projectPath}\" package {packageId} --version {version}");
     }
 }
 

@@ -2,6 +2,34 @@ namespace AgentGenCli.Cli.Scaffolding;
 
 internal static class EfMigrationHelper
 {
+    public static bool MigrationExists(ProjectContext context, string migrationName)
+    {
+        var migrationsDir = Path.Combine(
+            Path.GetDirectoryName(context.CommonProjectPath)!,
+            "Migrations"
+        );
+
+        if (!Directory.Exists(migrationsDir))
+        {
+            return false;
+        }
+
+        return Directory
+            .EnumerateFiles(migrationsDir, "*.cs")
+            .Any(path => Path.GetFileName(path).Contains(migrationName, StringComparison.Ordinal));
+    }
+
+    public static int AddMigrationIfMissing(ProjectContext context, string migrationName)
+    {
+        if (MigrationExists(context, migrationName))
+        {
+            Console.WriteLine($"Migration '{migrationName}' already exists; skipping.");
+            return 0;
+        }
+
+        return AddMigration(context, migrationName);
+    }
+
     public static int AddMigration(ProjectContext context, string migrationName)
     {
         Console.WriteLine($"Creating EF Core migration '{migrationName}'...");

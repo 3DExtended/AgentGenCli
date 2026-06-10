@@ -105,6 +105,133 @@ public class AuthTemplateCatalogTests
     }
 }
 
+public class EfMigrationHelperTests
+{
+    [Fact]
+    public void MigrationExists_ReturnsFalseWhenMigrationsFolderMissing()
+    {
+        using var root = new TempDirectory();
+        var context = new ProjectContext
+        {
+            Root = root.Path,
+            ProjectName = "TestApp",
+            CommonProjectPath = Path.Combine(root.Path, "common", "TestApp.Common", "TestApp.Common.csproj"),
+            ApiProjectPath = Path.Combine(root.Path, "applications", "TestApp.Api", "TestApp.Api.csproj"),
+        };
+
+        Assert.False(EfMigrationHelper.MigrationExists(context, "AddUsers"));
+    }
+
+    [Fact]
+    public void MigrationExists_ReturnsTrueWhenMigrationFilePresent()
+    {
+        using var root = new TempDirectory();
+        var commonDir = Path.Combine(root.Path, "common", "TestApp.Common");
+        var migrationsDir = Path.Combine(commonDir, "Migrations");
+        Directory.CreateDirectory(migrationsDir);
+        File.WriteAllText(Path.Combine(migrationsDir, "20260101120000_AddUsers.cs"), "// migration");
+
+        var context = new ProjectContext
+        {
+            Root = root.Path,
+            ProjectName = "TestApp",
+            CommonProjectPath = Path.Combine(commonDir, "TestApp.Common.csproj"),
+            ApiProjectPath = Path.Combine(root.Path, "applications", "TestApp.Api", "TestApp.Api.csproj"),
+        };
+
+        Assert.True(EfMigrationHelper.MigrationExists(context, "AddUsers"));
+    }
+
+    private sealed class TempDirectory : IDisposable
+    {
+        public TempDirectory()
+        {
+            Path = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "agentGenCli-ef-tests-" + Guid.NewGuid().ToString("N")
+            );
+            Directory.CreateDirectory(Path);
+        }
+
+        public string Path { get; }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(Path))
+            {
+                Directory.Delete(Path, recursive: true);
+            }
+        }
+    }
+}
+
+public class ApiProjectAuthPatcherTests
+{
+    [Fact]
+    public void Apply_AddsAuthPackagesOnceWhenMultipleItemGroupsExist()
+    {
+        using var root = new TempDirectory();
+        var apiDir = Path.Combine(root.Path, "applications", "TestApp.Api");
+        Directory.CreateDirectory(apiDir);
+
+        var apiProjectPath = Path.Combine(apiDir, "TestApp.Api.csproj");
+        File.WriteAllText(
+            apiProjectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk.Web">
+              <PropertyGroup>
+                <TargetFramework>net10.0</TargetFramework>
+              </PropertyGroup>
+              <ItemGroup>
+                <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+              </ItemGroup>
+              <ItemGroup>
+                <ProjectReference Include="..\..\common\TestApp.Common\TestApp.Common.csproj" />
+              </ItemGroup>
+            </Project>
+            """
+        );
+
+        var context = new ProjectContext
+        {
+            Root = root.Path,
+            ProjectName = "TestApp",
+            ApiProjectPath = apiProjectPath,
+        };
+
+        ApiProjectAuthPatcher.Apply(context);
+
+        var content = File.ReadAllText(apiProjectPath);
+        Assert.Equal(1, CountOccurrences(content, "Google.Apis.Auth"));
+        Assert.Equal(1, CountOccurrences(content, "Microsoft.AspNetCore.Authentication.JwtBearer"));
+    }
+
+    private static int CountOccurrences(string content, string value) =>
+        content.Split(value, StringSplitOptions.None).Length - 1;
+
+    private sealed class TempDirectory : IDisposable
+    {
+        public TempDirectory()
+        {
+            Path = System.IO.Path.Combine(
+                System.IO.Path.GetTempPath(),
+                "agentGenCli-api-patcher-tests-" + Guid.NewGuid().ToString("N")
+            );
+            Directory.CreateDirectory(Path);
+        }
+
+        public string Path { get; }
+
+        public void Dispose()
+        {
+            if (Directory.Exists(Path))
+            {
+                Directory.Delete(Path, recursive: true);
+            }
+        }
+    }
+}
+
 public class AuthScaffolderArtifactTests
 {
     [Fact]
