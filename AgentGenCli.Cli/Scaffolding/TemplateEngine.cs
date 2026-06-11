@@ -8,6 +8,8 @@ internal sealed class TemplateTokens
 
     public string? FeatureNameLower { get; init; }
 
+    public string? FeatureEntityName { get; init; }
+
     public string ProjectNameLower => ProjectName.ToLowerInvariant();
 
     public string ProjectNameSnake => NameFormatting.ToSnakeCase(ProjectName);
@@ -34,6 +36,11 @@ internal sealed class TemplateTokens
             dictionary["{{FeatureNameLower}}"] = FeatureNameLower;
         }
 
+        if (!string.IsNullOrEmpty(FeatureEntityName))
+        {
+            dictionary["{{FeatureEntityName}}"] = FeatureEntityName;
+        }
+
         return dictionary;
     }
 
@@ -43,6 +50,7 @@ internal sealed class TemplateTokens
             ProjectName = projectName,
             FeatureName = feature.PascalName,
             FeatureNameLower = feature.FolderName,
+            FeatureEntityName = feature.EntityPascalName,
         };
 }
 

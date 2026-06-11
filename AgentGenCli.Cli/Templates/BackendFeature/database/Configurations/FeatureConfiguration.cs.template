@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Configurations;
 
-public class {{FeatureName}}Configuration : IEntityTypeConfiguration<Entities.{{FeatureName}}>
+public class {{FeatureEntityName}}Configuration : IEntityTypeConfiguration<Entities.{{FeatureEntityName}}>
 {
-    public void Configure(EntityTypeBuilder<Entities.{{FeatureName}}> builder)
+    public void Configure(EntityTypeBuilder<Entities.{{FeatureEntityName}}> builder)
     {
         builder.ToTable("{{FeatureName}}");
         builder.HasKey(entity => entity.Id);

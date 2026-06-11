@@ -2,7 +2,7 @@ using {{ProjectName}}.Cqrs.EfCore;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Entities;
 
-public class {{FeatureName}} : IIdentifiableEntity<Guid>
+public class {{FeatureEntityName}} : IIdentifiableEntity<Guid>
 {
     public Guid Id { get; set; }
 

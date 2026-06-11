@@ -337,14 +337,8 @@ internal static class AgentDocsGenerator
             return folderName;
         }
 
-        var parts = folderName.Split(['-', '_', ' '], StringSplitOptions.RemoveEmptyEntries);
-        if (parts.Length == 0)
-        {
-            return char.ToUpperInvariant(folderName[0]) + folderName[1..];
-        }
-
-        return string.Concat(parts.Select(static part =>
-            char.ToUpperInvariant(part[0]) + part[1..].ToLowerInvariant()));
+        var segments = FeatureNameNormalizer.SplitIntoSegments(folderName);
+        return FeatureNameNormalizer.ToPascalName(segments);
     }
 
     private sealed class BackendFeatureState

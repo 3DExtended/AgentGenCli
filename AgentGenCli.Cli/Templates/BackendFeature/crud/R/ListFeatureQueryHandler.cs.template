@@ -16,7 +16,7 @@ public class List{{FeatureName}}QueryHandler
         {{FeatureName}}Id,
         Guid,
         {{ProjectName}}DbContext,
-        Entities.{{FeatureName}}
+        Entities.{{FeatureEntityName}}
     >
 {
     public List{{FeatureName}}QueryHandler(

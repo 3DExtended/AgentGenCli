@@ -9,11 +9,11 @@ public class {{FeatureName}}MapsterConfig : IRegister
 {
     public void Register(TypeAdapterConfig config)
     {
-        config.NewConfig<Entities.{{FeatureName}}, {{FeatureName}}Dto>()
+        config.NewConfig<Entities.{{FeatureEntityName}}, {{FeatureName}}Dto>()
             .Map(dest => dest.Id, src => {{FeatureName}}Id.From(src.Id))
             .Map(dest => dest.Name, src => src.Name);
 
-        config.NewConfig<{{FeatureName}}Dto, Entities.{{FeatureName}}>()
+        config.NewConfig<{{FeatureName}}Dto, Entities.{{FeatureEntityName}}>()
             .Map(dest => dest.Id, src => src.Id.Value == Guid.Empty ? Guid.NewGuid() : src.Id.Value)
             .Map(dest => dest.Name, src => src.Name);
     }

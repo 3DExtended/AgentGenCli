@@ -220,7 +220,7 @@ internal static class FeatureScaffolder
         {
             CopyTemplateFile(
                 "database/Entities/Feature.cs.template",
-                Path.Combine(context.FeatureProjectDir(feature), "Entities", $"{feature.PascalName}.cs"),
+                Path.Combine(context.FeatureProjectDir(feature), "Entities", $"{feature.EntityPascalName}.cs"),
                 tokens
             );
             CopyTemplateFile(
@@ -228,7 +228,7 @@ internal static class FeatureScaffolder
                 Path.Combine(
                     context.FeatureProjectDir(feature),
                     "Configurations",
-                    $"{feature.PascalName}Configuration.cs"
+                    $"{feature.EntityPascalName}Configuration.cs"
                 ),
                 tokens
             );

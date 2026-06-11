@@ -14,7 +14,7 @@ public class Delete{{FeatureName}}QueryHandler
         {{FeatureName}}Id,
         Guid,
         {{ProjectName}}DbContext,
-        Entities.{{FeatureName}}
+        Entities.{{FeatureEntityName}}
     >
 {
     public Delete{{FeatureName}}QueryHandler(IDbContextFactory<{{ProjectName}}DbContext> contextFactory)

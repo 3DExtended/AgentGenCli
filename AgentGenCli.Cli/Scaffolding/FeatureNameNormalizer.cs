@@ -21,11 +21,12 @@ internal static partial class FeatureNameNormalizer
             );
         }
 
-        var segments = trimmed.Split(['-', '_'], StringSplitOptions.RemoveEmptyEntries);
-        var pascal = string.Concat(segments.Select(ToPascalSegment));
-        var folder = trimmed.ToLowerInvariant();
+        var segments = SplitIntoSegments(trimmed);
+        var pascal = ToPascalName(segments);
+        var folder = ToFolderName(segments);
+        var entityPascal = pascal.EndsWith("Entity", StringComparison.Ordinal) ? pascal : pascal + "Entity";
 
-        return new FeatureNameInfo(trimmed, folder, pascal);
+        return new FeatureNameInfo(trimmed, folder, pascal, entityPascal);
     }
 
     public static string ParseCrudLetters(string? crud, bool withDatabase)
@@ -59,6 +60,49 @@ internal static partial class FeatureNameNormalizer
         return new string(result.OrderBy(c => "CRUD".IndexOf(c)).ToArray());
     }
 
+    internal static IReadOnlyList<string> SplitIntoSegments(string input)
+    {
+        if (input.Contains('-') || input.Contains('_'))
+        {
+            return input.Split(['-', '_'], StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        if (input.Length == 0)
+        {
+            return [];
+        }
+
+        var segments = new List<string>();
+        var start = 0;
+
+        for (var i = 1; i < input.Length; i++)
+        {
+            var current = input[i];
+            var previous = input[i - 1];
+
+            if (
+                char.IsUpper(current)
+                && (
+                    char.IsLower(previous)
+                    || (i + 1 < input.Length && char.IsLower(input[i + 1]))
+                )
+            )
+            {
+                segments.Add(input[start..i]);
+                start = i;
+            }
+        }
+
+        segments.Add(input[start..]);
+        return segments;
+    }
+
+    internal static string ToPascalName(IReadOnlyList<string> segments) =>
+        string.Concat(segments.Select(ToPascalSegment));
+
+    internal static string ToFolderName(IReadOnlyList<string> segments) =>
+        string.Join("-", segments.Select(segment => segment.ToLowerInvariant()));
+
     private static string ToPascalSegment(string segment)
     {
         if (segment.Length == 0)
@@ -74,4 +118,9 @@ internal static partial class FeatureNameNormalizer
     private static partial Regex FeatureNamePattern();
 }
 
-internal sealed record FeatureNameInfo(string RawInput, string FolderName, string PascalName);
+internal sealed record FeatureNameInfo(
+    string RawInput,
+    string FolderName,
+    string PascalName,
+    string EntityPascalName
+);
