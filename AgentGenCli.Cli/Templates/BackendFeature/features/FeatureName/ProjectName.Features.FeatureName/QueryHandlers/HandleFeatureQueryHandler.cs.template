@@ -15,11 +15,6 @@ public class Handle{{FeatureName}}QueryHandler : IQueryHandler<Handle{{FeatureNa
         CancellationToken cancellationToken
     )
     {
-        return Task.FromResult<Option<{{FeatureName}}Dto>>(
-            new {{FeatureName}}Dto
-            {
-                Message = "Replace this query with your {{FeatureName}} logic.",
-            }
-        );
+        return Task.FromResult<Option<{{FeatureName}}Dto>>(new {{FeatureName}}Dto());
     }
 }

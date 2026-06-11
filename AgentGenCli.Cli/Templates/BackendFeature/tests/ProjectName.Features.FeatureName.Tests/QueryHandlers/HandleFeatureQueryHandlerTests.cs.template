@@ -27,6 +27,6 @@ public class Handle{{FeatureName}}QueryHandlerTests
         var result = await handler.RunQueryAsync(new Handle{{FeatureName}}Query(), CancellationToken.None);
 
         Assert.True(result.IsSome);
-        Assert.Contains("Replace this query", result.Get().Message, StringComparison.Ordinal);
+        Assert.Equal(string.Empty, result.Get().Name);
     }
 }
