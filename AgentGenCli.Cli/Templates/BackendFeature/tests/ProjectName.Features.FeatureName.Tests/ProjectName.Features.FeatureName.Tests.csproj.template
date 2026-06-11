@@ -30,6 +30,7 @@
     <ProjectReference Include="..\..\features\{{FeatureNameLower}}\ProjectName.Features.FeatureName\ProjectName.Features.FeatureName.csproj" />
     <ProjectReference Include="..\..\features\{{FeatureNameLower}}\ProjectName.Features.FeatureName.Contracts\ProjectName.Features.FeatureName.Contracts.csproj" />
     <ProjectReference Include="..\..\common\ProjectName.Common\ProjectName.Common.csproj" />
+    <ProjectReference Include="..\ProjectName.Common.Tests\ProjectName.Common.Tests.csproj" />
   </ItemGroup>
 
 </Project>

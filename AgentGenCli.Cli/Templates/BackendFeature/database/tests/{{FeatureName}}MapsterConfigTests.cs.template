@@ -1,0 +1,30 @@
+using {{ProjectName}}.Common.Tests.Mapping;
+using {{ProjectName}}.Features.{{FeatureName}};
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+using {{ProjectName}}.Features.{{FeatureName}}.Entities;
+
+using MapsterMapper;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.Mapping;
+
+public class {{FeatureName}}MapsterConfigTests
+{
+    private static readonly IMapper Mapper =
+        MapsterTestMapperFactory.Create<{{FeatureName}}MapsterConfig>();
+
+    private static readonly (Type Type, string Name)[] ExcludedProperties = [];
+
+    [Fact]
+    public void {{FeatureEntityName}}_{{FeatureName}}Dto_RoundTripsAllProperties() =>
+        MapsterMappingAssert.AssertRoundTrip<{{FeatureEntityName}}, {{FeatureName}}Dto>(
+            Mapper,
+            ExcludedProperties
+        );
+
+    [Fact]
+    public void {{FeatureName}}Dto_{{FeatureEntityName}}_RoundTripsAllProperties() =>
+        MapsterMappingAssert.AssertRoundTrip<{{FeatureName}}Dto, {{FeatureEntityName}}>(
+            Mapper,
+            ExcludedProperties
+        );
+}

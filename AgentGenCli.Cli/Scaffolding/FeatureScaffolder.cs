@@ -232,9 +232,95 @@ internal static class FeatureScaffolder
                 ),
                 tokens
             );
+            CopyTemplateFile(
+                "database/tests/{{FeatureName}}MapsterConfigTests.cs.template",
+                Path.Combine(
+                    context.FeatureTestsDir(feature),
+                    "Mapping",
+                    $"{feature.PascalName}MapsterConfigTests.cs"
+                ),
+                tokens
+            );
         }
 
         ApplyCrudTemplates(context, feature, tokens, crudLetters);
+
+        if (!string.IsNullOrEmpty(crudLetters))
+        {
+            RemoveHandleScaffold(context, feature);
+        }
+    }
+
+    private static void RemoveHandleScaffold(ProjectContext context, FeatureNameInfo feature)
+    {
+        RemoveIfExists(
+            Path.Combine(context.FeatureContractsDir(feature), $"Handle{feature.PascalName}Query.cs")
+        );
+        RemoveIfExists(
+            Path.Combine(
+                context.FeatureProjectDir(feature),
+                "QueryHandlers",
+                $"Handle{feature.PascalName}QueryHandler.cs"
+            )
+        );
+        RemoveIfExists(
+            Path.Combine(
+                context.FeatureTestsDir(feature),
+                "QueryHandlers",
+                $"Handle{feature.PascalName}QueryHandlerTests.cs"
+            )
+        );
+
+        PatchCoverageTestAnchors(context, feature);
+    }
+
+    private static void PatchCoverageTestAnchors(ProjectContext context, FeatureNameInfo feature)
+    {
+        var featureNamespace = $"{context.ProjectName}.Features.{feature.PascalName}";
+        var testDataPath = Path.Combine(
+            context.FeatureTestsDir(feature),
+            "QueryHandlers",
+            "QueryHandlerCoverageTestData.cs"
+        );
+        if (File.Exists(testDataPath))
+        {
+            var content = File.ReadAllText(testDataPath);
+            content = content.Replace(
+                $"{featureNamespace}.QueryHandlers;",
+                $"{featureNamespace};",
+                StringComparison.Ordinal
+            );
+            content = content.Replace(
+                $"typeof(Handle{feature.PascalName}QueryHandler)",
+                $"typeof({feature.PascalName}MapsterConfig)",
+                StringComparison.Ordinal
+            );
+            File.WriteAllText(
+                testDataPath,
+                content,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+            );
+        }
+
+        var coverageTestsPath = Path.Combine(
+            context.FeatureTestsDir(feature),
+            "QueryHandlers",
+            "QueryHandlerCoverageTests.cs"
+        );
+        if (File.Exists(coverageTestsPath))
+        {
+            var content = File.ReadAllText(coverageTestsPath);
+            content = content.Replace(
+                $"typeof(Handle{feature.PascalName}QueryHandlerTests)",
+                "typeof(QueryHandlerCoverageTestData)",
+                StringComparison.Ordinal
+            );
+            File.WriteAllText(
+                coverageTestsPath,
+                content,
+                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+            );
+        }
     }
 
     private static void ApplyCrudTemplates(
@@ -404,7 +490,7 @@ internal static class FeatureScaffolder
         );
         File.WriteAllText(
             controllerTestsPath,
-            FeatureApiGenerator.GenerateControllerTests(context, feature),
+            FeatureApiGenerator.GenerateControllerTests(context, feature, crudLetters),
             new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
         );
     }
