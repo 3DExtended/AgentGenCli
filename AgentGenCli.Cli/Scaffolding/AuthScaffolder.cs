@@ -356,6 +356,7 @@ internal static class CommonProjectAuthPatcher
             "System.IdentityModel.Tokens.Jwt",
             "8.9.0"
         );
+        CsprojPackageHelper.AddPackageIfMissing(context.CommonProjectPath, "Google.Apis.Auth", "1.69.0");
     }
 }
 

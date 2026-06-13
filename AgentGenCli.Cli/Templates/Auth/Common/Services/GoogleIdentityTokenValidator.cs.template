@@ -1,11 +1,11 @@
-using {{ProjectName}}.Common.Auth;
-
 using Google.Apis.Auth;
+
+using {{ProjectName}}.Common.Auth;
 
 namespace {{ProjectName}}.Common.Services;
 
 public class GoogleIdentityTokenValidator : IGoogleIdentityTokenValidator
 {
     public Task ValidateAsync(string identityToken, CancellationToken cancellationToken = default) =>
-        GoogleJsonWebSignature.ValidateAsync(identityToken, cancellationToken: cancellationToken);
+        GoogleJsonWebSignature.ValidateAsync(identityToken);
 }
