@@ -7,6 +7,7 @@ using {{ProjectName}}.Features.Users.Contracts.Models;
 using {{ProjectName}}.Features.Users.Contracts.Queries.Users;
 
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.Caching.Memory;
 
 using {{ProjectName}}.Cqrs;
 
@@ -102,7 +103,7 @@ public class RegisterControllerTests : ControllerTestBase
             .RunQueryAsync(Arg.Any<UserRegisterQuery>(), Arg.Any<CancellationToken>())
             .Returns(Option<UserId>.None);
 
-        var client = CreateClientWithQueryProcessor(queryProcessor);
+        var (client, _) = CreateClientWithQueryProcessor(queryProcessor);
 
         var response = await client.PostAsJsonAsync(
             "/register/register",
@@ -178,10 +179,9 @@ public class RegisterControllerTests : ControllerTestBase
     [Fact]
     public async Task OpenProvider_WithIncompleteCache_ReturnsUnauthorized()
     {
-        Cache.Set(
-            "registrationapikeyincomplete",
-            new Dictionary<string, string> { { "sub", "provider-subject" } },
-            TimeSpan.FromHours(2)
+        SeedRegistrationCacheEntry(
+            "incomplete",
+            new Dictionary<string, string> { { "sub", "provider-subject" } }
         );
 
         var response = await Client.PostAsJsonAsync(
@@ -255,7 +255,16 @@ public class RegisterControllerTests : ControllerTestBase
             .RunQueryAsync(Arg.Any<UserCreateQuery>(), Arg.Any<CancellationToken>())
             .Returns(Option<UserId>.None);
 
-        var client = CreateClientWithQueryProcessor(queryProcessor);
+        var (client, cache) = CreateClientWithQueryProcessor(queryProcessor);
+        cache.Set(
+            "registrationapikey" + registrationToken,
+            new Dictionary<string, string>
+            {
+                { "sub", "create-fail-subject" },
+                { "email", "createfail@example.com" },
+            },
+            TimeSpan.FromHours(2)
+        );
 
         var response = await client.PostAsJsonAsync(
             "/register/openprovider",

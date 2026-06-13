@@ -1,15 +1,10 @@
-using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 using {{ProjectName}}.Api.Models;
 using {{ProjectName}}.Common.Auth;
 using {{ProjectName}}.Common.Data;
-using {{ProjectName}}.Common.Options;
-using {{ProjectName}}.Common.SendGrid;
 using {{ProjectName}}.Common.Services;
-
-using Google.Apis.Auth;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -38,9 +33,9 @@ public abstract class ControllerTestBase : IClassFixture<WebApplicationFactory<A
             builder.UseEnvironment("E2ETest");
             builder.ConfigureServices(services =>
             {
-                ReconfigureDatabase(services);
-                ReconfigureOptions(services);
-                ReconfigureGoogleValidator(services);
+                AuthTestServerConfiguration.ConfigureDatabase(services, _connection);
+                AuthTestServerConfiguration.ConfigureOptions(services);
+                AuthTestServerConfiguration.ConfigureGoogleValidator(services);
             });
         });
 
@@ -110,36 +105,50 @@ public abstract class ControllerTestBase : IClassFixture<WebApplicationFactory<A
 
     protected void SeedRegistrationCache(string registrationToken, string internalId, string email)
     {
+        SeedRegistrationCacheEntry(
+            registrationToken,
+            new Dictionary<string, string> { { "sub", internalId }, { "email", email } }
+        );
+    }
+
+    protected void SeedRegistrationCacheEntry(
+        string registrationToken,
+        Dictionary<string, string> cachedRegistration
+    )
+    {
         Cache.Set(
             "registrationapikey" + registrationToken,
-            new Dictionary<string, string> { { "sub", internalId }, { "email", email } },
+            cachedRegistration,
             TimeSpan.FromHours(2)
         );
     }
 
-    protected HttpClient CreateClientWithQueryProcessor(IQueryProcessor queryProcessor)
+    protected (HttpClient Client, IMemoryCache Cache) CreateClientWithQueryProcessor(
+        IQueryProcessor queryProcessor
+    )
     {
         var customFactory = Factory.WithWebHostBuilder(builder =>
         {
             builder.UseEnvironment("E2ETest");
             builder.ConfigureServices(services =>
             {
-                ReconfigureDatabase(services);
-                ReconfigureOptions(services);
-                ReconfigureGoogleValidator(services);
+                AuthTestServerConfiguration.ConfigureDatabase(services, _connection);
+                AuthTestServerConfiguration.ConfigureOptions(services);
+                AuthTestServerConfiguration.ConfigureGoogleValidator(services);
                 services.RemoveAll<IQueryProcessor>();
                 services.AddSingleton(queryProcessor);
             });
         });
 
         using var scope = customFactory.Services.CreateScope();
-        var contextFactory = scope.ServiceProvider.GetRequiredService<
+        var serviceProvider = scope.ServiceProvider;
+        var contextFactory = serviceProvider.GetRequiredService<
             IDbContextFactory<{{ProjectName}}DbContext>
         >();
         using var context = contextFactory.CreateDbContext();
         context.Database.EnsureCreated();
 
-        return customFactory.CreateClient();
+        return (customFactory.CreateClient(), serviceProvider.GetRequiredService<IMemoryCache>());
     }
 
     protected virtual void Dispose(bool disposing)
@@ -155,71 +164,5 @@ public abstract class ControllerTestBase : IClassFixture<WebApplicationFactory<A
         }
 
         _isDisposed = true;
-    }
-
-    private void ReconfigureDatabase(IServiceCollection services)
-    {
-        services.RemoveAll<DbContextOptions<{{ProjectName}}DbContext>>();
-        services.RemoveAll<IDbContextFactory<{{ProjectName}}DbContext>>();
-
-        services.AddDbContextFactory<{{ProjectName}}DbContext>(options =>
-            options.UseSqlite(_connection)
-        );
-    }
-
-    private static void ReconfigureGoogleValidator(IServiceCollection services)
-    {
-        services.RemoveAll<IGoogleIdentityTokenValidator>();
-        services.AddSingleton<IGoogleIdentityTokenValidator, PermissiveGoogleIdentityTokenValidator>();
-    }
-
-    private static void ReconfigureOptions(IServiceCollection services)
-    {
-        services.RemoveAll<JwtOptions>();
-        services.AddSingleton(
-            new JwtOptions
-            {
-                Issuer = "api",
-                Audience = "api",
-                Key = string.Join(string.Empty, Enumerable.Repeat("asdfasdf", 32)),
-                NumberOfSecondsToExpire = 12000,
-            }
-        );
-
-        services.RemoveAll<AppleAuthOptions>();
-        services.AddSingleton(new AppleAuthOptions { ClientId = AuthTestJwtHelper.TestAppleClientId });
-
-        services.RemoveAll<EncryptionOptions>();
-        services.AddSingleton(
-            new EncryptionOptions
-            {
-                DataKey = Convert.ToBase64String(new byte[32]),
-                Pepper = "test-pepper",
-            }
-        );
-
-        services.RemoveAll<SendGridOptions>();
-        services.AddSingleton(
-            new SendGridOptions
-            {
-                ApiKey = "test-key",
-                FromEmailAddress = "test@example.com",
-                FromSenderName = "Test",
-                IsDisabled = true,
-            }
-        );
-    }
-
-    private sealed class PermissiveGoogleIdentityTokenValidator : IGoogleIdentityTokenValidator
-    {
-        public Task ValidateAsync(string identityToken, CancellationToken cancellationToken = default)
-        {
-            if (identityToken == "invalid-google-token")
-            {
-                throw new InvalidJwtException("Invalid token.");
-            }
-
-            return Task.CompletedTask;
-        }
     }
 }

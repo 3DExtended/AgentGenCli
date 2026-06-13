@@ -15,6 +15,11 @@ internal static class ApiTestsAuthPatcher
             return;
         }
 
+        CsprojPackageHelper.AddPackageIfMissing(
+            path,
+            "Microsoft.AspNetCore.Authentication.JwtBearer",
+            "10.0.5"
+        );
         CsprojPackageHelper.AddPackageIfMissing(path, "Microsoft.Data.Sqlite", "10.0.5");
         CsprojPackageHelper.AddPackageIfMissing(path, "Microsoft.EntityFrameworkCore.Sqlite", "10.0.5");
         CsprojPackageHelper.AddPackageIfMissing(path, "NSubstitute", "5.3.0");

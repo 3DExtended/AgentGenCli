@@ -49,7 +49,7 @@ public class SignInControllerTests : ControllerTestBase
     {
         var response = await Client.PostAsJsonAsync(
             "/signin/login",
-            new LoginDto { Username = "", Password = "Password123!" }
+            new LoginDto { Username = string.Empty, Password = "Password123!" }
         );
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -72,7 +72,7 @@ public class SignInControllerTests : ControllerTestBase
     {
         var response = await Client.PostAsJsonAsync(
             "/signin/google",
-            new GoogleLoginDto { IdentityToken = "" }
+            new GoogleLoginDto { IdentityToken = string.Empty }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -149,7 +149,7 @@ public class SignInControllerTests : ControllerTestBase
             .RunQueryAsync(Arg.Any<UserGetByIdQuery>(), Arg.Any<CancellationToken>())
             .Returns(Option<User>.None);
 
-        var client = CreateClientWithQueryProcessor(queryProcessor);
+        var (client, _) = CreateClientWithQueryProcessor(queryProcessor);
         var identityToken = AuthTestJwtHelper.CreateGoogleIdentityToken(
             "orphan-subject",
             "orphan@example.com"
@@ -167,7 +167,7 @@ public class SignInControllerTests : ControllerTestBase
     {
         var response = await Client.PostAsJsonAsync(
             "/signin/apple",
-            new AppleLoginDto { IdentityToken = "" }
+            new AppleLoginDto { IdentityToken = string.Empty }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -301,7 +301,7 @@ public class SignInControllerTests : ControllerTestBase
     {
         var response = await Client.PostAsJsonAsync(
             "/signin/requestresetpassword",
-            new ResetPasswordRequestDto { Username = "", Email = "reset@example.com" }
+            new ResetPasswordRequestDto { Username = string.Empty, Email = "reset@example.com" }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
