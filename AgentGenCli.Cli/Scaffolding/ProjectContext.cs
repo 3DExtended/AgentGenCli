@@ -80,6 +80,24 @@ internal sealed class ProjectContext
     public string FeatureRegistrationPath =>
         Path.Combine(Root, "applications", $"{ProjectName}.Api", "FeatureRegistration.cs");
 
+    public string UsersContractsPath =>
+        Path.Combine(
+            Root,
+            "features",
+            "users",
+            $"{ProjectName}.Features.Users.Contracts",
+            $"{ProjectName}.Features.Users.Contracts.csproj"
+        );
+
+    public string UsersProjectPath =>
+        Path.Combine(
+            Root,
+            "features",
+            "users",
+            $"{ProjectName}.Features.Users",
+            $"{ProjectName}.Features.Users.csproj"
+        );
+
     public string FlutterAppDir => Path.Combine(Root, "applications", ProjectName.ToLowerInvariant());
 
     public string FlutterAppRelativePath =>

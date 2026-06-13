@@ -163,6 +163,37 @@ internal static class FeatureScaffolder
         Console.WriteLine($"    - {context.FeatureTestsDir(feature)}");
         Console.WriteLine("  Api patches:");
         Console.WriteLine("    - FeatureRegistration.cs");
+
+        var manifest = ProjectManifest.Load(context.Root);
+        if (manifest.AuthInitialized && !string.Equals(feature.PascalName, "Users", StringComparison.Ordinal))
+        {
+            Console.WriteLine("  Users references:");
+            Console.WriteLine(
+                $"    - {context.FeatureContractsPath(feature)} → {context.UsersContractsPath}"
+            );
+            Console.WriteLine(
+                $"    - {context.FeatureProjectPath(feature)} → {context.UsersContractsPath}, {context.UsersProjectPath}"
+            );
+        }
+    }
+
+    internal static IReadOnlyList<(string Project, string Reference)> GetUsersFeatureProjectReferences(
+        ProjectContext context,
+        FeatureNameInfo feature,
+        bool authInitialized
+    )
+    {
+        if (!authInitialized || string.Equals(feature.PascalName, "Users", StringComparison.Ordinal))
+        {
+            return [];
+        }
+
+        return
+        [
+            (context.FeatureContractsPath(feature), context.UsersContractsPath),
+            (context.FeatureProjectPath(feature), context.UsersContractsPath),
+            (context.FeatureProjectPath(feature), context.UsersProjectPath),
+        ];
     }
 
     private static bool Confirm()
@@ -529,6 +560,24 @@ internal static class FeatureScaffolder
             ok =
                 ok
                 && RunDotnetAddReference(context.ApiProjectPath, context.FeatureContractsPath(feature));
+        }
+
+        var manifest = ProjectManifest.Load(context.Root);
+        foreach (var (project, reference) in GetUsersFeatureProjectReferences(
+                     context,
+                     feature,
+                     manifest.AuthInitialized
+                 ))
+        {
+            if (!File.Exists(reference))
+            {
+                Console.Error.WriteLine(
+                    $"Auth is initialized but Users project not found at '{reference}'. Run 'agentGenCli init auth' first."
+                );
+                return false;
+            }
+
+            ok = ok && RunDotnetAddReference(project, reference);
         }
 
         return ok;
