@@ -1,0 +1,24 @@
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+using {{ProjectName}}.Features.{{FeatureName}}.Entities;
+
+using Microsoft.EntityFrameworkCore;
+
+namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.Testing;
+
+public static class {{FeatureName}}TestData
+{
+    public const string SampleName = "Sample";
+    public const string UpdatedName = "Updated";
+
+    public static async Task<({{FeatureName}}Id Id, {{FeatureEntityName}} Entity)> SeedAsync(
+        {{ProjectName}}DbContext context
+    )
+    {
+        var id = Guid.NewGuid();
+        var entity = new {{FeatureEntityName}} { Id = id, Name = SampleName };
+        context.Set<{{FeatureEntityName}}>().Add(entity);
+        await context.SaveChangesAsync().ConfigureAwait(false);
+        return ({{FeatureName}}Id.From(id), entity);
+    }
+}

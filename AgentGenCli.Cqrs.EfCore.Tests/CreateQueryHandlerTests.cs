@@ -19,5 +19,6 @@ public class CreateQueryHandlerTests : EfCoreTestBase
         Assert.True(result.IsSome);
         Assert.Single(Context.Entities);
         Assert.Equal("sample", Context.Entities.First().Name);
+        Assert.Equal(Context.Entities.First().Id, result.Get().Value);
     }
 }

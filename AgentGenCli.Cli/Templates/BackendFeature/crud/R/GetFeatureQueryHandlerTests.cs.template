@@ -1,60 +1,55 @@
-using {{ProjectName}}.Common;
 using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Common.Tests.Testing;
 using {{ProjectName}}.Features.{{FeatureName}};
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
 using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
-
-using Mapster;
-
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-
-using {{ProjectName}}.Cqrs;
-using MapsterMapper;
-using {{ProjectName}}.Cqrs.DependencyInjection;
+using {{ProjectName}}.Features.{{FeatureName}}.Tests.Testing;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
 public class Get{{FeatureName}}QueryHandlerTests
 {
     [Fact]
+    public async Task RunQueryAsync_WhenEntityExists_ReturnsMappedDto()
+    {
+        await using var scope = new InMemoryFeatureTestScope<{{ProjectName}}DbContext, {{FeatureName}}MapsterConfig>(
+            typeof(Get{{FeatureName}}QueryHandler).Assembly
+        );
+        await scope.EnsureCreatedAsync();
+
+        await using var seedContext = await scope.CreateDbContextAsync();
+        var (id, _) = await {{FeatureName}}TestData.SeedAsync(seedContext);
+
+        var handler = scope.GetHandler<Get{{FeatureName}}QueryHandler>();
+        var result = await handler.RunQueryAsync(
+            new Get{{FeatureName}}Query { ModelId = id },
+            CancellationToken.None
+        );
+
+        QueryHandlerResultAssert.AssertSome(
+            result,
+            dto =>
+            {
+                Assert.Equal(id, dto.Id);
+                Assert.Equal({{FeatureName}}TestData.SampleName, dto.Name);
+            }
+        );
+    }
+
+    [Fact]
     public async Task RunQueryAsync_WhenEntityMissing_ReturnsNone()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-
-        var services = new ServiceCollection();
-        services.AddSingleton<IFeatureAssemblyProvider>(
-            new FeatureAssemblyProvider([typeof({{FeatureName}}MapsterConfig).Assembly])
+        await using var scope = new InMemoryFeatureTestScope<{{ProjectName}}DbContext, {{FeatureName}}MapsterConfig>(
+            typeof(Get{{FeatureName}}QueryHandler).Assembly
         );
-        services.AddDbContextFactory<{{ProjectName}}DbContext>(options => options.UseSqlite(connection));
-        services.AddLogging();
-        var mapsterConfig = new TypeAdapterConfig();
-        new {{FeatureName}}MapsterConfig().Register(mapsterConfig);
-        services.AddSingleton(mapsterConfig);
-        services.AddSingleton<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
-        services.AddCqrs(options =>
-            options.WithQueryHandlersFrom(typeof(Get{{FeatureName}}QueryHandler).Assembly)
-        );
+        await scope.EnsureCreatedAsync();
 
-        await using var serviceProvider = services.BuildServiceProvider();
-        await using var scope = serviceProvider.CreateAsyncScope();
-
-        var contextFactory = scope.ServiceProvider.GetRequiredService<
-            IDbContextFactory<{{ProjectName}}DbContext>
-        >();
-        await using (var context = await contextFactory.CreateDbContextAsync())
-        {
-            await context.Database.EnsureCreatedAsync();
-        }
-
-        var handler = scope.ServiceProvider.GetRequiredService<Get{{FeatureName}}QueryHandler>();
+        var handler = scope.GetHandler<Get{{FeatureName}}QueryHandler>();
         var result = await handler.RunQueryAsync(
             new Get{{FeatureName}}Query { ModelId = {{FeatureName}}Id.From(Guid.NewGuid()) },
             CancellationToken.None
         );
 
-        Assert.True(result.IsNone);
+        QueryHandlerResultAssert.AssertNone(result);
     }
 }

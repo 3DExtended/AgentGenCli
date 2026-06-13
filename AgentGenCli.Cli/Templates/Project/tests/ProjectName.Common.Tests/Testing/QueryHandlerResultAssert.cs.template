@@ -1,0 +1,23 @@
+using {{ProjectName}}.Cqrs;
+using {{ProjectName}}.Cqrs.EfCore.Abstractions;
+
+namespace {{ProjectName}}.Common.Tests.Testing;
+
+public static class QueryHandlerResultAssert
+{
+    public static T AssertSome<T>(Option<T> result, Action<T>? assertContents = null)
+    {
+        Assert.True(result.IsSome);
+        var value = result.Get();
+        assertContents?.Invoke(value);
+        return value;
+    }
+
+    public static void AssertNone<T>(Option<T> result) => Assert.True(result.IsNone);
+
+    public static void AssertUnit(Option<Unit> result) =>
+        AssertSome(result, value => Assert.Equal(Unit.Value, value));
+
+    public static void AssertIdentifierNonEmpty(IIdentifier<Guid> id) =>
+        Assert.NotEqual(Guid.Empty, id.Value);
+}

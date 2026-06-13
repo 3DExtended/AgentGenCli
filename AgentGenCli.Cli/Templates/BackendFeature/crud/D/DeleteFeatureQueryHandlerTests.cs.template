@@ -1,51 +1,52 @@
-using {{ProjectName}}.Common;
 using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Common.Tests.Testing;
+using {{ProjectName}}.Features.{{FeatureName}};
 using {{ProjectName}}.Features.{{FeatureName}}.Contracts;
+using {{ProjectName}}.Features.{{FeatureName}}.Entities;
 using {{ProjectName}}.Features.{{FeatureName}}.QueryHandlers;
-
-using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-
-using {{ProjectName}}.Cqrs.DependencyInjection;
+using {{ProjectName}}.Features.{{FeatureName}}.Tests.Testing;
 
 namespace {{ProjectName}}.Features.{{FeatureName}}.Tests.QueryHandlers;
 
 public class Delete{{FeatureName}}QueryHandlerTests
 {
     [Fact]
+    public async Task RunQueryAsync_WhenEntityExists_DeletesAndReturnsUnit()
+    {
+        await using var scope = new InMemoryFeatureTestScope<{{ProjectName}}DbContext, {{FeatureName}}MapsterConfig>(
+            typeof(Delete{{FeatureName}}QueryHandler).Assembly
+        );
+        await scope.EnsureCreatedAsync();
+
+        await using var seedContext = await scope.CreateDbContextAsync();
+        var (id, _) = await {{FeatureName}}TestData.SeedAsync(seedContext);
+
+        var handler = scope.GetHandler<Delete{{FeatureName}}QueryHandler>();
+        var result = await handler.RunQueryAsync(
+            new Delete{{FeatureName}}Query { Id = id },
+            CancellationToken.None
+        );
+
+        QueryHandlerResultAssert.AssertUnit(result);
+
+        await using var verifyContext = await scope.CreateDbContextAsync();
+        Assert.Empty(verifyContext.Set<{{FeatureEntityName}}>());
+    }
+
+    [Fact]
     public async Task RunQueryAsync_WhenEntityMissing_ReturnsNone()
     {
-        await using var connection = new SqliteConnection("Data Source=:memory:");
-        await connection.OpenAsync();
-
-        var services = new ServiceCollection();
-        services.AddSingleton<IFeatureAssemblyProvider>(
-            new FeatureAssemblyProvider([typeof(Delete{{FeatureName}}QueryHandler).Assembly])
+        await using var scope = new InMemoryFeatureTestScope<{{ProjectName}}DbContext, {{FeatureName}}MapsterConfig>(
+            typeof(Delete{{FeatureName}}QueryHandler).Assembly
         );
-        services.AddDbContextFactory<{{ProjectName}}DbContext>(options => options.UseSqlite(connection));
-        services.AddLogging();
-        services.AddCqrs(options =>
-            options.WithQueryHandlersFrom(typeof(Delete{{FeatureName}}QueryHandler).Assembly)
-        );
+        await scope.EnsureCreatedAsync();
 
-        await using var serviceProvider = services.BuildServiceProvider();
-        await using var scope = serviceProvider.CreateAsyncScope();
-
-        var contextFactory = scope.ServiceProvider.GetRequiredService<
-            IDbContextFactory<{{ProjectName}}DbContext>
-        >();
-        await using (var context = await contextFactory.CreateDbContextAsync())
-        {
-            await context.Database.EnsureCreatedAsync();
-        }
-
-        var handler = scope.ServiceProvider.GetRequiredService<Delete{{FeatureName}}QueryHandler>();
+        var handler = scope.GetHandler<Delete{{FeatureName}}QueryHandler>();
         var result = await handler.RunQueryAsync(
             new Delete{{FeatureName}}Query { Id = {{FeatureName}}Id.From(Guid.NewGuid()) },
             CancellationToken.None
         );
 
-        Assert.True(result.IsNone);
+        QueryHandlerResultAssert.AssertNone(result);
     }
 }

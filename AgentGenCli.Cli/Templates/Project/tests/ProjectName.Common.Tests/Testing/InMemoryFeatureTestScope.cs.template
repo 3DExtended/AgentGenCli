@@ -1,0 +1,65 @@
+using System.Reflection;
+
+using {{ProjectName}}.Common;
+using {{ProjectName}}.Common.Data;
+using {{ProjectName}}.Cqrs.DependencyInjection;
+
+using Mapster;
+using MapsterMapper;
+
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace {{ProjectName}}.Common.Tests.Testing;
+
+public sealed class InMemoryFeatureTestScope<TDbContext, TMapsterConfig> : IAsyncDisposable
+    where TDbContext : DbContext
+    where TMapsterConfig : IRegister, new()
+{
+    private readonly SqliteConnection _connection;
+    private readonly ServiceProvider _serviceProvider;
+
+    public InMemoryFeatureTestScope(Assembly featureAssembly)
+    {
+        _connection = new SqliteConnection("Data Source=:memory:");
+        _connection.Open();
+
+        var services = new ServiceCollection();
+        services.AddSingleton<IFeatureAssemblyProvider>(
+            new FeatureAssemblyProvider([featureAssembly])
+        );
+        services.AddDbContextFactory<TDbContext>(options => options.UseSqlite(_connection));
+        services.AddLogging();
+
+        var mapsterConfig = new TypeAdapterConfig();
+        new TMapsterConfig().Register(mapsterConfig);
+        services.AddSingleton(mapsterConfig);
+        services.AddSingleton<IMapper>(sp => new Mapper(sp.GetRequiredService<TypeAdapterConfig>()));
+        services.AddCqrs(options => options.WithQueryHandlersFrom(featureAssembly));
+
+        _serviceProvider = services.BuildServiceProvider();
+    }
+
+    public async Task EnsureCreatedAsync()
+    {
+        await using var context = await CreateDbContextAsync().ConfigureAwait(false);
+        await context.Database.EnsureCreatedAsync().ConfigureAwait(false);
+    }
+
+    public async Task<TDbContext> CreateDbContextAsync()
+    {
+        var factory = _serviceProvider.GetRequiredService<IDbContextFactory<TDbContext>>();
+        return await factory.CreateDbContextAsync().ConfigureAwait(false);
+    }
+
+    public THandler GetHandler<THandler>()
+        where THandler : notnull =>
+        _serviceProvider.GetRequiredService<THandler>();
+
+    public async ValueTask DisposeAsync()
+    {
+        await _serviceProvider.DisposeAsync().ConfigureAwait(false);
+        await _connection.DisposeAsync().ConfigureAwait(false);
+    }
+}

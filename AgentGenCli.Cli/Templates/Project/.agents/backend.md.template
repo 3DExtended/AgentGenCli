@@ -65,7 +65,12 @@ Every query handler and API controller must have a matching test class. Meta-tes
 
 Opt out with `[ExcludeFromCoverageTests]` from `{{ProjectName}}.Common` when a type genuinely should not require a test class.
 
-`new backend-feature` scaffolds handler test stubs for every handler it creates. API controller tests use the `E2ETest` environment (no database/migrations).
+`new backend-feature` scaffolds handler tests for every CRUD handler it creates. Shared helpers in `{{ProjectName}}.Common.Tests/Testing/`:
+
+- `InMemoryFeatureTestScope<TDbContext, TMapsterConfig>` — SQLite in-memory DI setup for handler tests
+- `QueryHandlerResultAssert` — assert `Option<T>` shape and unwrap result contents (`AssertSome`, `AssertNone`, `AssertUnit`, `AssertIdentifierNonEmpty`)
+
+CRUD handler success tests assert returned result contents **and** DB side effects where applicable. Per-feature seed data lives in `{Feature}.Tests/Testing/{Feature}TestData.cs`. API controller tests use the `E2ETest` environment (no database/migrations).
 
 ```bash
 dotnet test

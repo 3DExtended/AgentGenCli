@@ -313,6 +313,12 @@ internal static class FeatureScaffolder
         string crudLetters
     )
     {
+        CopyTemplateFile(
+            "tests/ProjectName.Features.FeatureName.Tests/Testing/{{FeatureName}}TestData.cs.template",
+            Path.Combine(context.FeatureTestsDir(feature), "Testing", $"{feature.PascalName}TestData.cs"),
+            tokens
+        );
+
         if (crudLetters.Contains('C', StringComparison.Ordinal))
         {
             CopyTemplateFile(
