@@ -73,20 +73,6 @@ internal static class FeatureScaffolder
                 return 1;
             }
 
-            if (request.WithDatabase)
-            {
-                if (EfMigrationHelper.AddMigration(context, $"Add{feature.PascalName}") != 0)
-                {
-                    Console.Error.WriteLine("Error creating EF Core migration.");
-                    return 1;
-                }
-            }
-
-            if (!FormatGeneratedCode(context))
-            {
-                return 1;
-            }
-
             if (ProcessRunner.Run("dotnet", "build") != 0)
             {
                 Console.Error.WriteLine("Error building solution.");
@@ -134,6 +120,13 @@ internal static class FeatureScaffolder
 
             Console.WriteLine();
             Console.WriteLine($"Feature '{feature.PascalName}' scaffolded successfully.");
+            if (request.WithDatabase)
+            {
+                Console.WriteLine(
+                    $"After adjusting the entity, run: agentGenCli new efmigration Add{feature.PascalName}"
+                );
+            }
+
             return 0;
         }
         catch (Exception ex)
@@ -227,20 +220,25 @@ internal static class FeatureScaffolder
     {
         var tokens = TemplateTokens.ForFeature(context.ProjectName, feature);
 
+        var skipHandleScaffold = !string.IsNullOrEmpty(crudLetters);
+
         CopyTemplateDirectory(
             "features/FeatureName/ProjectName.Features.FeatureName.Contracts",
             context.FeatureContractsDir(feature),
-            tokens
+            tokens,
+            skipHandleScaffold
         );
         CopyTemplateDirectory(
             "features/FeatureName/ProjectName.Features.FeatureName",
             context.FeatureProjectDir(feature),
-            tokens
+            tokens,
+            skipHandleScaffold
         );
         CopyTemplateDirectory(
             "tests/ProjectName.Features.FeatureName.Tests",
             context.FeatureTestsDir(feature),
-            tokens
+            tokens,
+            skipHandleScaffold
         );
 
         RemoveIfExists(Path.Combine(context.FeatureContractsDir(feature), "Class1.cs"));
@@ -276,82 +274,36 @@ internal static class FeatureScaffolder
 
         ApplyCrudTemplates(context, feature, tokens, crudLetters);
 
-        if (!string.IsNullOrEmpty(crudLetters))
+        if (skipHandleScaffold)
         {
-            RemoveHandleScaffold(context, feature);
+            ApplyCrudCoverageTestTemplates(context, feature, tokens);
         }
     }
 
-    private static void RemoveHandleScaffold(ProjectContext context, FeatureNameInfo feature)
+    private static void ApplyCrudCoverageTestTemplates(
+        ProjectContext context,
+        FeatureNameInfo feature,
+        TemplateTokens tokens
+    )
     {
-        RemoveIfExists(
-            Path.Combine(context.FeatureContractsDir(feature), $"Handle{feature.PascalName}Query.cs")
-        );
-        RemoveIfExists(
-            Path.Combine(
-                context.FeatureProjectDir(feature),
-                "QueryHandlers",
-                $"Handle{feature.PascalName}QueryHandler.cs"
-            )
-        );
-        RemoveIfExists(
+        CopyTemplateFile(
+            "tests/ProjectName.Features.FeatureName.Tests/QueryHandlers/QueryHandlerCoverageTestData.crud.cs.template",
             Path.Combine(
                 context.FeatureTestsDir(feature),
                 "QueryHandlers",
-                $"Handle{feature.PascalName}QueryHandlerTests.cs"
-            )
+                "QueryHandlerCoverageTestData.cs"
+            ),
+            tokens
         );
-
-        PatchCoverageTestAnchors(context, feature);
-    }
-
-    private static void PatchCoverageTestAnchors(ProjectContext context, FeatureNameInfo feature)
-    {
-        var featureNamespace = $"{context.ProjectName}.Features.{feature.PascalName}";
-        var testDataPath = Path.Combine(
-            context.FeatureTestsDir(feature),
-            "QueryHandlers",
-            "QueryHandlerCoverageTestData.cs"
+        CopyTemplateFile(
+            "tests/ProjectName.Features.FeatureName.Tests/QueryHandlers/QueryHandlerCoverageTests.crud.cs.template",
+            Path.Combine(
+                context.FeatureTestsDir(feature),
+                "QueryHandlers",
+                "QueryHandlerCoverageTests.cs"
+            ),
+            tokens
         );
-        if (File.Exists(testDataPath))
-        {
-            var content = File.ReadAllText(testDataPath);
-            content = content.Replace(
-                $"{featureNamespace}.QueryHandlers;",
-                $"{featureNamespace};",
-                StringComparison.Ordinal
-            );
-            content = content.Replace(
-                $"typeof(Handle{feature.PascalName}QueryHandler)",
-                $"typeof({feature.PascalName}MapsterConfig)",
-                StringComparison.Ordinal
-            );
-            File.WriteAllText(
-                testDataPath,
-                content,
-                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
-            );
-        }
-
-        var coverageTestsPath = Path.Combine(
-            context.FeatureTestsDir(feature),
-            "QueryHandlers",
-            "QueryHandlerCoverageTests.cs"
-        );
-        if (File.Exists(coverageTestsPath))
-        {
-            var content = File.ReadAllText(coverageTestsPath);
-            content = content.Replace(
-                $"typeof(Handle{feature.PascalName}QueryHandlerTests)",
-                "typeof(QueryHandlerCoverageTestData)",
-                StringComparison.Ordinal
-            );
-            File.WriteAllText(
-                coverageTestsPath,
-                content,
-                new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
-            );
-        }
     }
 
     private static void ApplyCrudTemplates(
@@ -607,7 +559,8 @@ internal static class FeatureScaffolder
     private static void CopyTemplateDirectory(
         string templateRelativeDirectory,
         string destinationDirectory,
-        TemplateTokens tokens
+        TemplateTokens tokens,
+        bool skipHandleScaffold = false
     )
     {
         var sourceRoot = Path.Combine(TemplateEngine.GetBackendFeatureTemplateRoot(), templateRelativeDirectory);
@@ -619,6 +572,10 @@ internal static class FeatureScaffolder
         foreach (var sourceFile in Directory.EnumerateFiles(sourceRoot, "*", SearchOption.AllDirectories))
         {
             var relativePath = Path.GetRelativePath(sourceRoot, sourceFile);
+            if (skipHandleScaffold && IsHandleScaffoldTemplate(relativePath))
+            {
+                continue;
+            }
             var targetRelativePath = ResolveTemplateOutputPath(ReplaceTemplateTokens(relativePath, tokens));
             var targetPath = Path.Combine(destinationDirectory, targetRelativePath);
             var directory = Path.GetDirectoryName(targetPath);
@@ -705,4 +662,8 @@ internal static class FeatureScaffolder
             File.Delete(path);
         }
     }
+
+    private static bool IsHandleScaffoldTemplate(string relativePath) =>
+        relativePath.Contains("HandleFeature", StringComparison.Ordinal)
+        || relativePath.Contains(".crud.", StringComparison.Ordinal);
 }

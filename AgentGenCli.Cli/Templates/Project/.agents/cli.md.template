@@ -46,7 +46,9 @@ agentGenCli new backend-feature <name> [--withDatabase] [--withApi] [--crud CRUD
 | `--crud` | Letters `C`, `R`, `U`, `D` (default `CRUD` when `--withDatabase`) |
 | `--yes` | Skip confirmation |
 
-Creates `features/{name}/` projects, patches `FeatureRegistration.cs`, optionally runs EF migration.
+Creates `features/{name}/` projects and patches `FeatureRegistration.cs`. Does not create an EF migration — run `new efmigration` after adjusting the entity.
+
+With `--withDatabase` (and therefore CRUD handlers), the placeholder `Handle{Name}Query` / handler are omitted. Without `--withDatabase`, a single `Handle{Name}` query/handler stub is scaffolded instead.
 
 ### `new frontend-feature` — requires flutter frontend
 
@@ -94,13 +96,15 @@ Applies pending EF Core migrations to the configured database.
 **Backend-only API change**
 
 1. `agentGenCli new backend-feature Orders --withDatabase --withApi --yes`
-2. `dotnet test`
+2. Adjust entity, then `agentGenCli new efmigration AddOrders`
+3. `dotnet test`
 
 **Full-stack feature**
 
 1. `agentGenCli new backend-feature Orders --withDatabase --withApi --yes`
-2. `agentGenCli new frontend-feature orders --withApi --yes`
-3. If API changed later: `agentGenCli project sync-openapi`
+2. Adjust entity, then `agentGenCli new efmigration AddOrders`
+3. `agentGenCli new frontend-feature orders --withApi --yes`
+4. If API changed later: `agentGenCli project sync-openapi`
 
 **Verify locally**
 
