@@ -8,21 +8,26 @@ internal static class FeatureApiGenerator
         string crudLetters
     )
     {
+        var requireAuth = ProjectManifest.Load(context.Root).AuthInitialized;
         var project = context.ProjectName;
         var name = feature.PascalName;
         var route = feature.FolderName;
 
-        var methods = new List<string>
+        var methods = new List<string>();
+
+        if (string.IsNullOrEmpty(crudLetters))
         {
-            $$"""
-                [HttpGet("handle")]
-                public async Task<IActionResult> Handle(CancellationToken cancellationToken)
-                {
-                    var result = await _queryProcessor.RunQueryAsync(new Handle{{name}}Query(), cancellationToken);
-                    return ToActionResult(result);
-                }
-            """,
-        };
+            methods.Add(
+                $$"""
+                    [HttpGet("handle")]
+                    public async Task<IActionResult> Handle(CancellationToken cancellationToken)
+                    {
+                        var result = await _queryProcessor.RunQueryAsync(new Handle{{name}}Query(), cancellationToken);
+                        return ToActionResult(result);
+                    }
+                """
+            );
+        }
 
         if (crudLetters.Contains('C', StringComparison.Ordinal))
         {
@@ -118,10 +123,13 @@ internal static class FeatureApiGenerator
             );
         }
 
+        var authUsing = requireAuth ? "using Microsoft.AspNetCore.Authorization;\n\n" : string.Empty;
+        var authorizeAttribute = requireAuth ? "[Authorize]\n" : string.Empty;
+
         return $$"""
             using {{project}}.Features.{{name}}.Contracts;
 
-            using Microsoft.AspNetCore.Mvc;
+            {{authUsing}}using Microsoft.AspNetCore.Mvc;
 
             using {{project}}.Cqrs;
 
@@ -129,7 +137,7 @@ internal static class FeatureApiGenerator
 
             [ApiController]
             [Route("{{route}}")]
-            public class {{name}}Controller : ControllerBase
+            {{authorizeAttribute}}public class {{name}}Controller : ControllerBase
             {
                 private readonly IQueryProcessor _queryProcessor;
 
@@ -153,11 +161,62 @@ internal static class FeatureApiGenerator
             """;
     }
 
-    public static string GenerateControllerTests(ProjectContext context, FeatureNameInfo feature)
+    public static string GenerateControllerTests(
+        ProjectContext context,
+        FeatureNameInfo feature,
+        string crudLetters
+    )
     {
+        var requireAuth = ProjectManifest.Load(context.Root).AuthInitialized;
         var project = context.ProjectName;
         var name = feature.PascalName;
         var route = feature.FolderName;
+
+        if (!string.IsNullOrEmpty(crudLetters))
+        {
+            return $$"""
+                namespace {{project}}.Api.Tests.Controllers;
+
+                public class {{name}}ControllerTests
+                {
+                }
+                """;
+        }
+
+        if (requireAuth)
+        {
+            return $$"""
+                using System.Net.Http.Headers;
+                using System.Net.Http.Json;
+
+                using {{project}}.Api.Tests.Base;
+                using {{project}}.Features.{{name}}.Contracts;
+
+                using Microsoft.AspNetCore.Mvc.Testing;
+
+                namespace {{project}}.Api.Tests.Controllers;
+
+                public class {{name}}ControllerTests : ControllerTestBase
+                {
+                    public {{name}}ControllerTests(WebApplicationFactory<ApiEntryPoint> factory)
+                        : base(factory) { }
+
+                    [Fact]
+                    public async Task Handle_returns_placeholder_dto()
+                    {
+                        var jwt = await RegisterUserAsync();
+                        Client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+
+                        var response = await Client.GetAsync("/{{route}}/handle");
+                        response.EnsureSuccessStatusCode();
+
+                        var dto = await response.Content.ReadFromJsonAsync<{{name}}Dto>();
+                        Assert.NotNull(dto);
+                        Assert.Contains("Replace this query", dto.Message, StringComparison.Ordinal);
+                    }
+                }
+                """;
+        }
 
         return $$"""
             using System.Net.Http.Json;
