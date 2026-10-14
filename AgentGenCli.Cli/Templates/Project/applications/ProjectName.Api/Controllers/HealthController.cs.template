@@ -39,7 +39,7 @@ public class HealthController : ControllerBase
                 RunInParallel = runInParallel,
             };
 
-            var result = await _queryProcessor.RunQueryAsync(query, cancellationToken);
+            var result = await _queryProcessor.RunQueryAsync(query, cancellationToken).ConfigureAwait(false);
 
             if (result.IsNone)
             {

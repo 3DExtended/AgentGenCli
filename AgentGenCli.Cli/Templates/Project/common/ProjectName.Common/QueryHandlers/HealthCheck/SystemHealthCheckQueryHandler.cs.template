@@ -45,14 +45,14 @@ public class SystemHealthCheckQueryHandler : IQueryHandler<SystemHealthCheckQuer
 
             if (query.RunInParallel)
             {
-                report.Results = (await Task.WhenAll(healthChecks.Select(check => check()))).ToList();
+                report.Results = (await Task.WhenAll(healthChecks.Select(check => check())).ConfigureAwait(false)).ToList();
             }
             else
             {
                 report.Results = new List<HealthCheckResult>();
                 foreach (var check in healthChecks)
                 {
-                    report.Results.Add(await check());
+                    report.Results.Add(await check().ConfigureAwait(false));
                 }
             }
 
@@ -136,8 +136,9 @@ public class SystemHealthCheckQueryHandler : IQueryHandler<SystemHealthCheckQuer
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             cts.CancelAfter(timeoutMs);
 
-            await using var context = await contextFactory.CreateDbContextAsync(cts.Token);
-            var canConnect = await context.Database.CanConnectAsync(cts.Token);
+            var context = await contextFactory.CreateDbContextAsync(cts.Token).ConfigureAwait(false);
+            await using var contextDisposal = context.ConfigureAwait(false);
+            var canConnect = await context.Database.CanConnectAsync(cts.Token).ConfigureAwait(false);
 
             if (canConnect)
             {

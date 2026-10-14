@@ -35,7 +35,8 @@ public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, UserId>
     {
         var userId = Guid.NewGuid();
 
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using var contextDisposal = context.ConfigureAwait(false);
         context.Set<UserEntity>().Add(
             new UserEntity
             {
@@ -45,7 +46,7 @@ public class UserCreateQueryHandler : IQueryHandler<UserCreateQuery, UserId>
                 CreatedAt = _systemClock.UtcNow,
             }
         );
-        await context.SaveChangesAsync(cancellationToken);
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         if (query.UserCredentials != null)
         {

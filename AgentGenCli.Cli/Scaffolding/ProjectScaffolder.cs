@@ -244,6 +244,7 @@ internal static class ProjectScaffolder
             Path.Combine(root, "Directory.Build.props"),
             tokens
         );
+        TemplateEngine.CopyFile(".editorconfig", Path.Combine(root, ".editorconfig"), tokens);
         TemplateEngine.CopyFile("stylecop.json", Path.Combine(root, "stylecop.json"), tokens);
         TemplateEngine.CopyFile(
             "pesser-Default.ruleset",

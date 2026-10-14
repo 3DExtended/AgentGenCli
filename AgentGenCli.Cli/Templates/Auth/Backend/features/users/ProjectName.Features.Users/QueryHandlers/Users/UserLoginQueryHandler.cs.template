@@ -30,14 +30,15 @@ public class UserLoginQueryHandler : IQueryHandler<UserLoginQuery, UserId>
         CancellationToken cancellationToken
     )
     {
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using var contextDisposal = context.ConfigureAwait(false);
         var credentials = await context
             .Set<UserCredentialsEntity>()
             .AsNoTracking()
             .FirstOrDefaultAsync(
                 x => x.Username == query.Username && !x.Deleted,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
         if (credentials == null || credentials.SignInProvider)
         {

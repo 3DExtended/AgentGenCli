@@ -36,11 +36,12 @@ public class UserExistsByEmailQueryHandler : IQueryHandler<UserExistsByEmailQuer
 
         var lookupHash = _emailProtectionService.ComputeLookupHash(query.Email);
 
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using var contextDisposal = context.ConfigureAwait(false);
         var exists = await context
             .Set<UserCredentialsEntity>()
             .AsNoTracking()
-            .AnyAsync(x => x.EmailLookupHash == lookupHash && !x.Deleted, cancellationToken);
+            .AnyAsync(x => x.EmailLookupHash == lookupHash && !x.Deleted, cancellationToken).ConfigureAwait(false);
 
         return exists;
     }

@@ -29,14 +29,15 @@ public class UserGetByInternalIdQueryHandler : IQueryHandler<UserGetByInternalId
             return Option<UserId>.None;
         }
 
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using var contextDisposal = context.ConfigureAwait(false);
         var credentials = await context
             .Set<UserCredentialsEntity>()
             .AsNoTracking()
             .FirstOrDefaultAsync(
                 x => x.InternalId == query.InternalId && !x.Deleted,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
         if (credentials == null)
         {

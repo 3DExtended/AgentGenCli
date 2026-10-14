@@ -30,11 +30,12 @@ public class UserExistsByUsernameQueryHandler : IQueryHandler<UserExistsByUserna
 
         var normalized = query.Username.Trim().ToLowerInvariant();
 
-        await using var context = await _contextFactory.CreateDbContextAsync(cancellationToken);
+        var context = await _contextFactory.CreateDbContextAsync(cancellationToken).ConfigureAwait(false);
+        await using var contextDisposal = context.ConfigureAwait(false);
         var exists = await context
             .Set<UserEntity>()
             .AsNoTracking()
-            .AnyAsync(x => x.NormalizedUsername == normalized, cancellationToken);
+            .AnyAsync(x => x.NormalizedUsername == normalized, cancellationToken).ConfigureAwait(false);
 
         return exists;
     }

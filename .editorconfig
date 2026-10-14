@@ -1,0 +1,23 @@
+root = true
+
+[*]
+charset = utf-8
+insert_final_newline = true
+
+[*.{cs,vb}]
+# CA2007: require explicit ConfigureAwait on awaited tasks.
+# https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2007
+dotnet_diagnostic.CA2007.severity = error
+dotnet_code_quality.CA2007.exclude_async_void_methods = true
+dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary
+
+# Generator CLI — not backend library code
+[AgentGenCli.Cli/**]
+dotnet_diagnostic.CA2007.severity = none
+
+# Test projects — excluded from ConfigureAwait enforcement
+[tests/**]
+dotnet_diagnostic.CA2007.severity = none
+
+[**/*.Tests/**]
+dotnet_diagnostic.CA2007.severity = none

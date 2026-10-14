@@ -133,7 +133,8 @@ public static class DependencyInjectionHelpers
             return;
         }
 
-        await using var scope = services.BuildServiceProvider().CreateAsyncScope();
+        var scope = services.BuildServiceProvider().CreateAsyncScope();
+        await using var scopeDisposal = scope.ConfigureAwait(false);
         var factory = scope.ServiceProvider.GetService<
             IDbContextFactory<{{ProjectName}}DbContext>
         >();
@@ -143,13 +144,14 @@ public static class DependencyInjectionHelpers
             return;
         }
 
-        await using var context = await factory.CreateDbContextAsync();
-        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+        var context = await factory.CreateDbContextAsync().ConfigureAwait(false);
+        await using var contextDisposal = context.ConfigureAwait(false);
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync().ConfigureAwait(false);
 
         if (pendingMigrations.Any())
         {
             Console.WriteLine("Applying pending migrations...");
-            await context.Database.MigrateAsync();
+            await context.Database.MigrateAsync().ConfigureAwait(false);
             Console.WriteLine("Migrations applied successfully.");
         }
     }
