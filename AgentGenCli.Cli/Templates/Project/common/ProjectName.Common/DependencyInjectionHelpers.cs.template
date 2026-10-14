@@ -119,10 +119,14 @@ public static class DependencyInjectionHelpers
             return;
         }
 
-        var isEfMigrations = Array.Exists(
-            Environment.GetCommandLineArgs(),
-            arg => arg.Contains("ef", StringComparison.OrdinalIgnoreCase)
-        );
+        // Skip when running under `dotnet ef` (design-time tools). Compare the file name exactly: a substring
+        // match on "ef" also hits assemblies such as "RescueTheForest.Api.dll" and silently disables migrations.
+        var isEfMigrations =
+            EF.IsDesignTime
+            || Array.Exists(
+                Environment.GetCommandLineArgs(),
+                arg => string.Equals(Path.GetFileName(arg), "ef.dll", StringComparison.OrdinalIgnoreCase)
+            );
 
         if (isEfMigrations)
         {
