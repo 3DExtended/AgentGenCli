@@ -142,6 +142,64 @@ public class EfMigrationHelperTests
         Assert.True(EfMigrationHelper.MigrationExists(context, "AddUsers"));
     }
 
+    [Fact]
+    public void AddMigrationAndRecord_WhenMigrationSucceeds_RecordsCommandInManifest()
+    {
+        using var root = new TempDirectory();
+        ProjectManifest.Save(root.Path, ProjectManifest.CreateInitial("TestApp"));
+
+        var exitCode = EfMigrationHelper.AddMigrationAndRecord(
+            CreateContext(root.Path),
+            "AddGreenhouse",
+            static (_, _) => 0
+        );
+
+        Assert.Equal(0, exitCode);
+        var entry = Assert.Single(ProjectManifest.Load(root.Path).Commands);
+        Assert.Equal("new efmigration", entry.Command);
+        Assert.Equal("AddGreenhouse", entry.Args!["name"].GetString());
+    }
+
+    [Fact]
+    public void AddMigrationAndRecord_WhenMigrationFails_DoesNotRecord()
+    {
+        using var root = new TempDirectory();
+        ProjectManifest.Save(root.Path, ProjectManifest.CreateInitial("TestApp"));
+
+        var exitCode = EfMigrationHelper.AddMigrationAndRecord(
+            CreateContext(root.Path),
+            "AddGreenhouse",
+            static (_, _) => 1
+        );
+
+        Assert.Equal(1, exitCode);
+        Assert.Empty(ProjectManifest.Load(root.Path).Commands);
+    }
+
+    [Fact]
+    public void AddMigrationAndRecord_WithoutManifest_SucceedsWithoutCreatingOne()
+    {
+        using var root = new TempDirectory();
+
+        var exitCode = EfMigrationHelper.AddMigrationAndRecord(
+            CreateContext(root.Path),
+            "AddGreenhouse",
+            static (_, _) => 0
+        );
+
+        Assert.Equal(0, exitCode);
+        Assert.False(File.Exists(Path.Combine(root.Path, ProjectManifest.FileName)));
+    }
+
+    private static ProjectContext CreateContext(string root) =>
+        new()
+        {
+            Root = root,
+            ProjectName = "TestApp",
+            CommonProjectPath = Path.Combine(root, "common", "TestApp.Common", "TestApp.Common.csproj"),
+            ApiProjectPath = Path.Combine(root, "applications", "TestApp.Api", "TestApp.Api.csproj"),
+        };
+
     private sealed class TempDirectory : IDisposable
     {
         public TempDirectory()

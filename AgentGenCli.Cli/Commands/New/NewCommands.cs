@@ -113,7 +113,7 @@ internal static class NewCommands
             try
             {
                 var context = ProjectContext.Resolve(projectFlag: parseResult.GetValue(projectOption));
-                return EfMigrationHelper.AddMigration(context, name);
+                return EfMigrationHelper.AddMigrationAndRecord(context, name);
             }
             catch (Exception ex)
             {
